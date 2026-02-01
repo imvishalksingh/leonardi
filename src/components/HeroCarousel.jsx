@@ -45,7 +45,7 @@ const slides = [
         title: "Classic Essentials",
         subtitle: "Suspenders & Bowties",
         description: "Complete your formal look with our range of adjustable suspenders and pre-tied bowties.",
-        image: "hero-slide-5.png",
+        image: "hero-slide-5.jpg",
         cta: "Shop Essentials",
         link: "/collection/suspender"
     }
@@ -69,8 +69,42 @@ const HeroCarousel = () => {
         return () => clearInterval(timer);
     }, [current]);
 
+    const [touchStart, setTouchStart] = useState(null);
+    const [touchEnd, setTouchEnd] = useState(null);
+
+    // Minimum swipe distance (in px) 
+    const minSwipeDistance = 50;
+
+    const onTouchStart = (e) => {
+        setTouchEnd(null); // Reset touch end
+        setTouchStart(e.targetTouches[0].clientX);
+    };
+
+    const onTouchMove = (e) => {
+        setTouchEnd(e.targetTouches[0].clientX);
+    };
+
+    const onTouchEnd = () => {
+        if (!touchStart || !touchEnd) return;
+        const distance = touchStart - touchEnd;
+        const isLeftSwipe = distance > minSwipeDistance;
+        const isRightSwipe = distance < -minSwipeDistance;
+
+        if (isLeftSwipe) {
+            nextSlide();
+        }
+        if (isRightSwipe) {
+            prevSlide();
+        }
+    };
+
     return (
-        <div className="relative w-full aspect-[720/860] md:aspect-auto md:h-[70vh] bg-gray-50 overflow-hidden">
+        <div
+            className="relative w-full aspect-[720/860] md:aspect-auto md:h-[70vh] bg-gray-50 overflow-hidden"
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
+        >
             <div
                 className="flex transition-transform duration-700 ease-in-out h-full"
                 style={{ transform: `translateX(-${current * 100}%)` }}

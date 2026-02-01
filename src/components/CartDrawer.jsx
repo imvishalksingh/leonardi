@@ -12,13 +12,6 @@ const CartDrawer = () => {
         removeFromCart,
         cartTotal,
         leoCoins,
-        applyDiscount,
-        removeDiscount,
-        discountCode,
-        discountAmount,
-        toggleRedeemCoins,
-        isRedeemingCoins,
-        coinDiscount,
         finalTotal
     } = useCart();
     const navigate = useNavigate();
@@ -95,57 +88,9 @@ const CartDrawer = () => {
                 {/* Footer */}
                 {cartItems.length > 0 && (
                     <div className="p-6 border-t border-gray-100 bg-gray-50 shrink-0 space-y-4">
-                        {/* Leo Coins Banner */}
-                        <div className="bg-white border border-gray-200 text-gray-800 text-xs py-2 px-3 text-center uppercase tracking-wide font-bold">
-                            You will earn <span className="text-accent">{leoCoins}</span> Leo Coins with this order
-                        </div>
 
-                        {/* Discount & Coins Section */}
-                        <div className="space-y-3 pt-2">
-                            {/* Coupon Code */}
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    placeholder="Discount Code"
-                                    className="flex-grow border border-gray-300 px-3 py-2 text-sm uppercase outline-none focus:border-black"
-                                    onChange={(e) => {
-                                        // Ideally managed by local state before applying, leveraging context for now if needed or simple local state
-                                        // For simplicity, let's just use a ref or local state in the component. 
-                                        // Wait, I need to add local state for the input here.
-                                    }}
-                                    id="coupon-input"
-                                />
-                                <button
-                                    onClick={() => {
-                                        const input = document.getElementById('coupon-input');
-                                        if (input) applyDiscount(input.value);
-                                    }}
-                                    className="bg-black text-white px-4 text-xs font-bold uppercase tracking-wider hover:bg-gray-800"
-                                >
-                                    Apply
-                                </button>
-                            </div>
-                            {discountAmount > 0 && (
-                                <div className="flex justify-between items-center text-xs text-green-600 font-bold bg-green-50 p-2 rounded">
-                                    <span>Code {discountCode} applied!</span>
-                                    <button onClick={removeDiscount} className="text-red-500 underline">Remove</button>
-                                </div>
-                            )}
 
-                            {/* Redeem Coins */}
-                            <div className="flex items-center space-x-2">
-                                <input
-                                    type="checkbox"
-                                    id="redeem-coins"
-                                    checked={isRedeemingCoins}
-                                    onChange={toggleRedeemCoins}
-                                    className="w-4 h-4 accent-black"
-                                />
-                                <label htmlFor="redeem-coins" className="text-sm cursor-pointer select-none">
-                                    Redeem 500 Leo Coins (Get ₹50 Off)
-                                </label>
-                            </div>
-                        </div>
+
 
                         <div className="space-y-2 border-t border-gray-200 pt-4">
                             <div className="flex justify-between text-sm text-gray-600 uppercase tracking-wide">
@@ -153,19 +98,7 @@ const CartDrawer = () => {
                                 <span>₹{cartTotal.toFixed(2)}</span>
                             </div>
 
-                            {discountAmount > 0 && (
-                                <div className="flex justify-between text-sm text-green-600 uppercase tracking-wide">
-                                    <span>Discount</span>
-                                    <span>-₹{discountAmount.toFixed(2)}</span>
-                                </div>
-                            )}
 
-                            {coinDiscount > 0 && (
-                                <div className="flex justify-between text-sm text-accent uppercase tracking-wide">
-                                    <span>Leo Coins</span>
-                                    <span>-₹{coinDiscount.toFixed(2)}</span>
-                                </div>
-                            )}
 
                             <div className="flex justify-between text-lg font-bold uppercase tracking-wider pt-2 border-t border-gray-100">
                                 <span>Total</span>

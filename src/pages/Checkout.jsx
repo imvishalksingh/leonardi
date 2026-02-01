@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
 import { imageHelper } from '../utils/imageHelper';
+import DiscountRedemption from '../components/DiscountRedemption';
 
 const Checkout = () => {
     const { cartItems, cartTotal, discountAmount, coinDiscount, finalTotal } = useCart();
@@ -45,10 +46,6 @@ const Checkout = () => {
 
                 {/* Left Column: Form Steps */}
                 <div className="lg:col-span-7 space-y-8">
-                    {/* Logo */}
-                    <Link to="/" className="block text-2xl font-serif font-black tracking-widest uppercase mb-8">
-                        LEONARDI
-                    </Link>
 
                     {/* Breadcrumbs */}
                     <div className="flex items-center text-xs font-bold uppercase tracking-widest space-x-2 text-gray-500 mb-8">
@@ -76,8 +73,12 @@ const Checkout = () => {
                                 </div>
                                 <input required type="tel" placeholder="Phone" className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm" />
 
-                                <div className="mt-8 flex justify-end">
-                                    <button type="submit" className="bg-black text-white px-8 py-4 uppercase font-bold tracking-widest text-xs hover:bg-gray-800 transition-colors">
+                                {/* Buttons - Standard Layout */}
+                                <div className="mt-8 flex flex-col md:flex-row justify-end items-center gap-4">
+                                    <Link to="/cart" className="text-sm text-gray-500 hover:text-black order-2 md:order-1">
+                                        &lt; Return to Cart
+                                    </Link>
+                                    <button type="submit" className="w-full md:w-auto bg-black text-white px-8 py-4 uppercase font-bold tracking-widest text-xs hover:bg-gray-800 transition-colors order-1 md:order-2">
                                         Continue to Shipping
                                     </button>
                                 </div>
@@ -98,11 +99,13 @@ const Checkout = () => {
                                     <span className="text-sm font-bold">Free</span>
                                 </label>
                             </div>
-                            <div className="flex justify-between items-center mt-8">
-                                <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-black">
+
+                            {/* Buttons - Standard Layout */}
+                            <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                                <button onClick={() => setStep(1)} className="text-sm text-gray-500 hover:text-black order-2 md:order-1">
                                     &lt; Return to Information
                                 </button>
-                                <button onClick={handleContinueToPayment} className="bg-black text-white px-8 py-4 uppercase font-bold tracking-widest text-xs hover:bg-gray-800 transition-colors">
+                                <button onClick={handleContinueToPayment} className="w-full md:w-auto bg-black text-white px-8 py-4 uppercase font-bold tracking-widest text-xs hover:bg-gray-800 transition-colors order-1 md:order-2">
                                     Continue to Payment
                                 </button>
                             </div>
@@ -138,14 +141,15 @@ const Checkout = () => {
                                 </label>
                             </div>
 
-                            <div className="flex justify-between items-center mt-8">
-                                <button onClick={() => setStep(2)} className="text-sm text-gray-500 hover:text-black">
+                            {/* Buttons - Standard Layout */}
+                            <div className="mt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                                <button onClick={() => setStep(2)} className="text-sm text-gray-500 hover:text-black order-2 md:order-1">
                                     &lt; Return to Shipping
                                 </button>
                                 <button
                                     onClick={handleCompleteOrder}
                                     disabled={loading}
-                                    className="bg-black text-white px-8 py-4 uppercase font-bold tracking-widest text-xs hover:bg-gray-800 transition-colors disabled:opacity-50"
+                                    className="w-full md:w-auto bg-black text-white px-8 py-4 uppercase font-bold tracking-widest text-xs hover:bg-gray-800 transition-colors disabled:opacity-50 order-1 md:order-2"
                                 >
                                     {loading ? 'Processing...' : 'Complete Order'}
                                 </button>
@@ -175,6 +179,12 @@ const Checkout = () => {
                                 </div>
                             ))}
                         </div>
+
+
+                        <div className="pt-6 border-b border-gray-100 pb-6">
+                            <DiscountRedemption condensed={true} />
+                        </div>
+
                         <div className="pt-6 space-y-2">
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-600">Subtotal</span>
@@ -210,7 +220,7 @@ const Checkout = () => {
                 </div>
 
             </div>
-        </div>
+        </div >
     );
 };
 

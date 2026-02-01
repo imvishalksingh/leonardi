@@ -4,6 +4,7 @@ import ProductCard from '../components/ProductCard';
 import { Link, useParams } from 'react-router-dom';
 import { imageHelper } from '../utils/imageHelper';
 import HeroCarousel from '../components/HeroCarousel';
+import SEO from '../components/SEO';
 
 const Home = () => {
     const { category } = useParams();
@@ -89,6 +90,10 @@ const Home = () => {
     if (category) {
         return (
             <div className="container mx-auto px-4 py-8 min-h-screen">
+                <SEO
+                    title={`${category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Collection`}
+                    description={`Shop the exclusive ${category.replace(/-/g, ' ')} collection at Leonardi. Premium accessories for the modern wardrobe.`}
+                />
                 <div className="mb-8 text-center">
                     <h1 className="text-3xl font-serif font-bold uppercase tracking-widest mb-2">
                         {category.replace('-', ' ')} Collection
@@ -226,7 +231,13 @@ const Home = () => {
     // Standard Home Page
     return (
         <div className="space-y-12 pb-16">
-            <HeroCarousel />
+            <SEO
+                title="Premium Fashion & Accessories"
+                description="Discover Leonardi's exquisite collection of brooches, neckties, belts, and more. Handcrafted luxury for discerning tastes."
+            />
+            <section className="container mx-auto px-4">
+                <HeroCarousel />
+            </section>
 
             <section className="container mx-auto px-4">
                 <h2 className="text-xl font-bold text-center mb-8 uppercase tracking-widest">Shop By Category</h2>

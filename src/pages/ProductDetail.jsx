@@ -6,6 +6,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { imageHelper } from '../utils/imageHelper';
 import { Star, Truck, ShieldCheck, Ruler, Heart } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
+import SEO from '../components/SEO';
 
 const ProductDetail = () => {
     const { slug } = useParams();
@@ -24,6 +25,7 @@ const ProductDetail = () => {
     const { isInWishlist, toggleWishlist } = useWishlist();
 
     useEffect(() => {
+        window.scrollTo(0, 0);
         setLoading(true);
         getProductBySlug(slug)
             .then(data => {
@@ -45,14 +47,14 @@ const ProductDetail = () => {
         addToCart(product, quantity, { size: selectedSize, color: selectedColor, openDrawer });
     };
 
-    const calculateStockProgress = () => {
-        const total = product.stock + product.sold_count;
-        const progress = (product.sold_count / total) * 100;
-        return progress;
-    };
-
     return (
         <div className="container mx-auto px-4 py-8">
+            <SEO
+                title={product.name}
+                description={`Buy ${product.name} - ₹${product.price}. High quality ${product.category} from Leonardi.`}
+                image={imageHelper(product.images[0])}
+                type="product"
+            />
             <div className="grid lg:grid-cols-12 gap-8 mb-16">
                 {/* Thumbnails - Vertical on desktop, Horizontal on mobile */}
                 <div className="lg:col-span-1 hidden lg:flex flex-col gap-4">
@@ -68,8 +70,16 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Main Image */}
-                <div className="lg:col-span-4 bg-gray-100 aspect-[1080/1440] relative overflow-hidden">
+                <div className="lg:col-span-4 bg-gray-100 aspect-[1080/1440] relative overflow-hidden group">
                     <img src={imageHelper(product.images[selectedImage])} alt={product.name} className="w-full h-full object-cover" />
+                    {/* Wishlist Button - Top Right */}
+                    <button
+                        onClick={() => toggleWishlist(product)}
+                        className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-md transition-colors ${isInWishlist(product.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                        title={isInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
+                    >
+                        <Heart size={20} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
+                    </button>
                 </div>
 
                 {/* Mobile Thumbnails only */}
@@ -103,16 +113,6 @@ const ProductDetail = () => {
                     <div className="bg-red-50 text-red-600 px-4 py-2 text-sm font-medium flex items-center space-x-2 animate-pulse rounded-md">
                         <span>🔥</span>
                         <span>Selling fast! 22 people have this in their carts.</span>
-                    </div>
-
-                    <div className="space-y-1">
-                        <div className="flex justify-between text-xs font-bold text-gray-500 uppercase">
-                            <span>Sold: {product.sold_count}</span>
-                            <span>Available: {product.stock}</span>
-                        </div>
-                        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                            <div className="h-full bg-red-500 transition-all duration-1000" style={{ width: `${calculateStockProgress()}%` }}></div>
-                        </div>
                     </div>
 
                     <hr className="border-gray-100" />
@@ -153,36 +153,31 @@ const ProductDetail = () => {
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                            <div className="flex border border-gray-300 w-full sm:w-32 items-center h-10">
-                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-full flex items-center justify-center hover:bg-gray-50">-</button>
-                                <input type="text" readOnly value={quantity} className="flex-grow text-center w-full h-full border-x border-gray-300 outline-none" />
-                                <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-full flex items-center justify-center hover:bg-gray-50">+</button>
+                        <div className="flex flex-col gap-4 pt-4">
+                            {/* Row 1: Quantity + Add to Cart */}
+                            <div className="flex gap-4 w-full">
+                                <div className="flex border border-gray-300 w-1/2 items-center h-12">
+                                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-full flex items-center justify-center hover:bg-gray-50">-</button>
+                                    <input type="text" readOnly value={quantity} className="flex-grow text-center w-full h-full border-x border-gray-300 outline-none" />
+                                    <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-full flex items-center justify-center hover:bg-gray-50">+</button>
+                                </div>
+                                <button
+                                    onClick={() => handleAddToCart(true)}
+                                    className="w-1/2 bg-black text-white uppercase font-bold tracking-wider hover:bg-gray-800 transition-colors h-12 flex items-center justify-center rounded-sm text-sm"
+                                >
+                                    Add to Cart
+                                </button>
                             </div>
-                            <button
-                                onClick={() => handleAddToCart(true)}
-                                className="flex-grow bg-black text-white uppercase font-bold tracking-wider hover:bg-gray-800 transition-colors h-10 flex items-center justify-center rounded-sm text-sm"
-                            >
-                                Add to Cart
-                            </button>
+
+                            {/* Row 2: Buy Now */}
                             <button
                                 onClick={() => {
                                     handleAddToCart(false); // Don't open drawer
                                     navigate('/checkout'); // Direct to checkout
                                 }}
-                                className="flex-grow bg-white text-black border border-black uppercase font-bold tracking-wider hover:bg-gray-50 transition-colors h-10 flex items-center justify-center rounded-sm text-sm"
+                                className="w-full bg-white text-black border border-black uppercase font-bold tracking-wider hover:bg-gray-50 transition-colors h-12 flex items-center justify-center rounded-sm text-sm"
                             >
                                 Buy Now
-                            </button>
-                            <button
-                                onClick={() => toggleWishlist(product)}
-                                className={`w-12 h-10 border flex items-center justify-center transition-colors ${isInWishlist(product.id)
-                                    ? 'bg-black text-white border-black'
-                                    : 'border-gray-300 hover:border-black text-black'
-                                    }`}
-                                title={isInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
-                            >
-                                <Heart size={20} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
                             </button>
                         </div>
                     </div>

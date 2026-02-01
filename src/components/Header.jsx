@@ -8,19 +8,24 @@ import { getProducts } from '../services/productService'; // Added getProducts
 import { imageHelper } from '../utils/imageHelper'; // Added imageHelper
 import { useAuth } from '../context/AuthContext';
 import SearchModal from './SearchModal';
-import WishlistDrawer from './WishlistDrawer';
-import AuthModal from './AuthModal';
 
-const Header = () => {
+const Header = ({
+    isMobileMenuOpen,
+    setIsMobileMenuOpen,
+    isWishlistOpen,
+    setIsWishlistOpen,
+    isAuthOpen,
+    setIsAuthOpen
+}) => {
     const [navTree, setNavTree] = useState([]);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    // Removed local isMobileMenuOpen
     const [hoveredCategory, setHoveredCategory] = useState(null);
     const [expandedCategory, setExpandedCategory] = useState(null);
 
     // Feature States
     const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [isWishlistOpen, setIsWishlistOpen] = useState(false);
-    const [isAuthOpen, setIsAuthOpen] = useState(false);
+    // Removed local isWishlistOpen
+    // Removed local isAuthOpen
 
     // Search Data
     const [allProducts, setAllProducts] = useState([]);
@@ -43,8 +48,6 @@ const Header = () => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 50);
         };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
@@ -91,10 +94,7 @@ const Header = () => {
 
     return (
         <div className="w-full relative z-50">
-            {/* ... Top Bar ... */}
-            <div className={`bg-black text-white text-center text-xs py-2 tracking-wide relative z-50 transition-all duration-300`}>
-                New customers save 10% with the code GET10
-            </div>
+            {/* Top Bar Removed */}
 
             <header className={`transition-all duration-300 z-50 w-full border-b sticky top-0 bg-white shadow-sm ${borderColorClass}`}>
                 <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
@@ -105,7 +105,7 @@ const Header = () => {
                             className={`mr-2 transition-colors ${textColorClass}`}
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                         >
-                            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                            <Menu size={24} />
                         </button>
 
                         {/* Desktop Search Bar (Restored & Moved Left) */}
@@ -196,21 +196,29 @@ const Header = () => {
                 {/* Mobile Inline Search */}
                 {isSearchOpen && (
                     <div className="lg:hidden border-t border-gray-100 bg-white px-4 py-4 animate-fade-in shadow-md">
-                        <div className="relative">
-                            <input
-                                type="text"
-                                placeholder="Search for products..."
-                                className="w-full bg-gray-50 border-none rounded-md px-4 py-3 pl-10 text-sm outline-none focus:ring-1 focus:ring-gray-200"
-                                value={searchQuery}
-                                onChange={handleSearchChange}
-                                autoFocus
-                            />
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                            {searchQuery && (
-                                <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 bg-gray-200 rounded-full p-0.5">
-                                    <X size={14} />
-                                </button>
-                            )}
+                        <div className="flex items-center gap-3">
+                            <div className="relative flex-grow">
+                                <input
+                                    type="text"
+                                    placeholder="Search for products..."
+                                    className="w-full bg-gray-50 border-none rounded-md px-4 py-3 pl-10 text-sm outline-none focus:ring-1 focus:ring-gray-200"
+                                    value={searchQuery}
+                                    onChange={handleSearchChange}
+                                    autoFocus
+                                />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                {searchQuery && (
+                                    <button onClick={clearSearch} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 bg-gray-200 rounded-full p-0.5">
+                                        <X size={14} />
+                                    </button>
+                                )}
+                            </div>
+                            <button
+                                onClick={() => setIsSearchOpen(false)}
+                                className="text-sm font-bold text-gray-500 uppercase tracking-wide"
+                            >
+                                Cancel
+                            </button>
                         </div>
 
                         {/* Mobile Search Results */}
@@ -254,21 +262,24 @@ const Header = () => {
                 )}
             </header>
 
-            {/* Mobile Menu (Rothy's Style - Under Header) */}
-            <div className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMobileMenuOpen(false)}>
+            {/* Mobile Menu (Drawer) */}
+            <div className={`fixed inset-0 bg-black/50 z-[60] transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`} onClick={() => setIsMobileMenuOpen(false)}>
                 <div
-                    className={`fixed inset-y-0 left-0 w-full md:w-1/2 bg-white shadow-xl transition-transform duration-300 transform flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                    className={`fixed inset-y-0 left-0 w-[85%] md:w-[40%] bg-white shadow-xl transition-transform duration-300 transform flex flex-col ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {/* Scrollable Navigation Content (Below Header) */}
-                    <div className="flex-1 overflow-y-auto pt-[105px]">
+                    {/* Drawer Header with Close Button */}
+                    <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                        <span className="text-2xl font-serif font-black tracking-widest uppercase text-black">
+                            MENU
+                        </span>
+                        <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                            <X size={24} />
+                        </button>
+                    </div>
 
-                        {/* Drawer Logo (Centered) */}
-                        <div className="text-center py-6 border-b border-gray-100 mb-2">
-                            <span className="text-2xl font-serif font-black tracking-widest uppercase text-black">
-                                MENU
-                            </span>
-                        </div>
+                    {/* Scrollable Navigation Content */}
+                    <div className="flex-1 overflow-y-auto pt-0">
 
                         <div className="px-0">
                             {navTree.map(item => (
@@ -322,38 +333,13 @@ const Header = () => {
 
                         {/* Extra Links (re-styled) */}
                         <div className="mt-4 px-6 space-y-4 pb-8">
-                            <Link to="/wishlist" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-sm font-bold uppercase tracking-widest text-gray-900 border-b border-gray-100">
-                                Wishlist
-                            </Link>
                             <Link to="/stores" onClick={() => setIsMobileMenuOpen(false)} className="block py-3 text-sm font-bold uppercase tracking-widest text-gray-900 border-b border-gray-100">
                                 Stores
                             </Link>
                         </div>
-
-                        {/* Sidebar Footer Buttons (Restored) */}
-                        <div className="mt-2 px-6 pb-8 space-y-4 border-t border-gray-100 pt-6">
-                            <Link to="/account" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-3 text-gray-900 hover:text-accent transition-colors group">
-                                <User size={20} strokeWidth={1.5} className="group-hover:text-accent" />
-                                <span className="text-sm font-bold uppercase tracking-widest">My Account</span>
-                            </Link>
-                            <button
-                                onClick={() => {
-                                    setIsMobileMenuOpen(false);
-                                    setIsWishlistOpen(true);
-                                }}
-                                className="flex items-center gap-3 text-gray-900 hover:text-accent transition-colors group w-full text-left"
-                            >
-                                <Heart size={20} strokeWidth={1.5} className="group-hover:text-accent" />
-                                <span className="text-sm font-bold uppercase tracking-widest">Wishlist</span>
-                            </button>
-                        </div>
                     </div>
                 </div>
             </div>
-
-            {/* Modals & Drawers */}
-            <WishlistDrawer isOpen={isWishlistOpen} onClose={() => setIsWishlistOpen(false)} />
-            <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
         </div>
     );
 };
