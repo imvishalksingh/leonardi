@@ -79,7 +79,7 @@ const Home = () => {
     const renderProductSlider = (items = products) => (
         <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-thin scroll-snap-x">
             {items.map(product => (
-                <div key={product.id} className="min-w-[85%] md:min-w-[40%] lg:min-w-[calc(25%-18px)] flex-shrink-0 scroll-snap-align-start">
+                <div key={product.id} className="w-[85%] md:w-[40%] lg:w-[calc(25%-18px)] flex-shrink-0 scroll-snap-align-start">
                     <ProductCard product={product} />
                 </div>
             ))}
@@ -268,7 +268,7 @@ const Home = () => {
                 {renderProductGrid()}
             </section>
 
-            <section className="bg-gray-50 py-12">
+            {/* <section className="bg-gray-50 py-12">
                 <div className="container mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
                     <div className="aspect-[4/3] bg-gray-200 relative overflow-hidden">
                         <img
@@ -299,7 +299,7 @@ const Home = () => {
                         </button>
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             <section className="container mx-auto px-4">
                 <div className="flex justify-center space-x-8 mb-8 border-b border-gray-100">

@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const AuthModal = ({ isOpen, onClose }) => {
     const [mode, setMode] = useState('login'); // 'login' or 'register'
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
     if (!isOpen) return null;
 
     const handleSubmit = (e) => {
         e.preventDefault();
         // Mock authentication
+        const emailInput = e.target.querySelector('input[type="email"]');
+        const email = emailInput ? emailInput.value : 'user@example.com';
+
+        login(email);
         alert(`Successfully ${mode === 'login' ? 'logged in' : 'registered'}!`);
         onClose();
+        navigate('/profile');
     };
 
     return (

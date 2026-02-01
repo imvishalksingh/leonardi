@@ -17,7 +17,7 @@ const ProductCard = ({ product }) => {
     return (
         <>
             <div className="group relative bg-white">
-                <div className="relative aspect-[1080/1440] overflow-hidden bg-gray-100">
+                <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
                     <Link to={`/product/${product.slug}`}>
                         <img
                             src={imageHelper(product.images[0])}

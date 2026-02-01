@@ -13,7 +13,7 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
     if (!isOpen || !product) return null;
 
     const handleAddToCart = () => {
-        addToCart(product, quantity, { size: selectedSize, color: selectedColor });
+        addToCart(product, quantity, { size: selectedSize, color: selectedColor, openDrawer: false });
         onClose();
     };
 

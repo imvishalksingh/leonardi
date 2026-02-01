@@ -25,6 +25,20 @@ const Profile = () => {
         }));
     };
 
+    if (!user) {
+        return (
+            <div className="container mx-auto px-4 py-20 min-h-screen text-center">
+                <h2 className="text-2xl font-serif font-bold mb-4">Please Sign In</h2>
+                <p className="text-gray-600 mb-8">You need to be logged in to view your profile.</p>
+                <div className="p-8 border border-dashed border-gray-300 rounded-lg inline-block">
+                    <p className="text-sm text-gray-500">
+                        Click the "Sign In" button in the header to access your profile.
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="container mx-auto px-4 py-8 md:py-12 bg-gray-50 min-h-screen">
             <div className="flex flex-col lg:flex-row gap-8 max-w-6xl mx-auto">

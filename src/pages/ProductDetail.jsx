@@ -162,7 +162,7 @@ const ProductDetail = () => {
                                     <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-full flex items-center justify-center hover:bg-gray-50">+</button>
                                 </div>
                                 <button
-                                    onClick={() => handleAddToCart(true)}
+                                    onClick={() => handleAddToCart(false)}
                                     className="w-1/2 bg-black text-white uppercase font-bold tracking-wider hover:bg-gray-800 transition-colors h-12 flex items-center justify-center rounded-sm text-sm"
                                 >
                                     Add to Cart
@@ -187,34 +187,58 @@ const ProductDetail = () => {
             </div>
 
             <div className="max-w-4xl mx-auto mb-16">
-                <div className="flex justify-center border-b border-gray-200 mb-8">
-                    {['description', 'delivery', 'ask_question'].map(tab => (
+                <div className="flex justify-center mb-8 gap-4">
+                    {['description', 'specifications'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
-                            className={`mx-6 pb-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors ${activeTab === tab ? 'border-black text-black' : 'border-transparent text-gray-400 hover:text-black'}`}
+                            className={`px-8 py-2 text-sm font-bold capitalize rounded-full transition-all shadow-sm ${activeTab === tab
+                                ? 'bg-white text-black ring-1 ring-black'
+                                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                }`}
                         >
-                            {tab.replace('_', ' ')}
+                            {tab}
                         </button>
                     ))}
                 </div>
-                <div className="text-sm text-gray-600 leading-relaxed text-center min-h-[100px]">
+
+                <div className="bg-white border border-gray-100 rounded-xl p-8 shadow-sm">
                     {activeTab === 'description' && (
-                        <p className="max-w-2xl mx-auto">
-                            Elevate your wardrobe with this exquisite piece from Leonardi.
-                            Crafted with precision and attention to detail, it features premium materials
-                            ensuring both durability and style. Perfect for formal occasions or adding a
-                            touch of sophistication to your casual look.
-                        </p>
-                    )}
-                    {activeTab === 'delivery' && (
-                        <div className="flex flex-col items-center gap-2">
-                            <div className="flex items-center"><Truck size={16} className="mr-2" /> Free shipping on orders over ₹2000</div>
-                            <div className="flex items-center"><ShieldCheck size={16} className="mr-2" /> 7 Days Easy Return Policy</div>
+                        <div className="grid md:grid-cols-2 gap-12 text-left">
+                            <div>
+                                <h3 className="text-lg font-bold mb-4">About This Product</h3>
+                                <ul className="space-y-3 text-sm text-gray-700">
+                                    <li className="flex"><span className="font-bold w-32">Item Type:</span> {product.item_type || product.category}</li>
+                                    <li className="flex"><span className="font-bold w-32">Pattern:</span> {product.pattern || 'Solid'}</li>
+                                    <li className="flex"><span className="font-bold w-32">Material Care:</span> {product.material_care || 'Dry Clean Only'}</li>
+                                    <li className="flex"><span className="font-bold w-32">Number of Items:</span> {product.items_count || 1}</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold mb-4">Description</h3>
+                                <p className="text-sm text-gray-600 leading-relaxed max-w-xl whitespace-pre-line">
+                                    {product.description || `The ${product.name.toLowerCase()} gives you a sophisticated look within seconds. Designed to create a perfect appearance without any difficulty.`}
+                                </p>
+                            </div>
                         </div>
                     )}
-                    {activeTab === 'ask_question' && (
-                        <p>Have a question? Contact our support team at info@leonardi.in.</p>
+
+                    {activeTab === 'specifications' && (
+                        <div className="text-left max-w-2xl mx-auto">
+                            <h3 className="text-lg font-bold mb-6 border-b pb-2">Specifications</h3>
+                            <div className="space-y-4 text-sm">
+                                {product.specifications ? (
+                                    Object.entries(product.specifications).map(([key, value]) => (
+                                        <div key={key} className="grid grid-cols-3 pb-2 border-b border-gray-50">
+                                            <span className="font-bold">{key}</span>
+                                            <span className="col-span-2 text-gray-600">{value}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-gray-500 italic">No specifications available.</div>
+                                )}
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
