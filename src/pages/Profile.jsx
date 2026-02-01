@@ -25,6 +25,8 @@ const Profile = () => {
         }));
     };
 
+    // Temporarily bypassed for direct access
+    /*
     if (!user) {
         return (
             <div className="container mx-auto px-4 py-20 min-h-screen text-center">
@@ -38,6 +40,7 @@ const Profile = () => {
             </div>
         );
     }
+    */
 
     return (
         <div className="container mx-auto px-4 py-8 md:py-12 bg-gray-50 min-h-screen">

@@ -173,9 +173,9 @@ const Header = ({
 
                     {/* RIGHT: User, Wishlist, Cart */}
                     <div className="flex items-center justify-end gap-4 flex-1">
-                        <button className={`hover:text-accent transition-colors ${textColorClass}`} onClick={() => setIsAuthOpen(true)}>
+                        <Link to="/account" className={`hover:text-accent transition-colors ${textColorClass}`}>
                             <User size={20} />
-                        </button>
+                        </Link>
 
                         <button className={`hover:text-accent transition-colors relative ${textColorClass}`} onClick={() => setIsWishlistOpen(true)}>
                             <Heart size={20} />
