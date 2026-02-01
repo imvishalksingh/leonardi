@@ -67,12 +67,12 @@ const AuthModal = ({ isOpen, onClose }) => {
                     {mode === 'login' ? (
                         <p>
                             Don't have an account?{' '}
-                            <button onClick={() => setMode('register')} className="font-bold underline">Create one</button>
+                            <button type="button" onClick={() => setMode('register')} className="font-bold underline">Create one</button>
                         </p>
                     ) : (
                         <p>
                             Already have an account?{' '}
-                            <button onClick={() => setMode('login')} className="font-bold underline">Sign in</button>
+                            <button type="button" onClick={() => setMode('login')} className="font-bold underline">Sign in</button>
                         </p>
                     )}
                 </div>
