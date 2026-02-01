@@ -75,9 +75,6 @@ const Checkout = () => {
 
                                 {/* Buttons - Standard Layout */}
                                 <div className="mt-8 flex flex-col md:flex-row justify-end items-center gap-4">
-                                    <Link to="/cart" className="text-sm text-gray-500 hover:text-black order-2 md:order-1">
-                                        &lt; Return to Cart
-                                    </Link>
                                     <button type="submit" className="w-full md:w-auto bg-black text-white px-8 py-4 uppercase font-bold tracking-widest text-xs hover:bg-gray-800 transition-colors order-1 md:order-2">
                                         Continue to Shipping
                                     </button>
