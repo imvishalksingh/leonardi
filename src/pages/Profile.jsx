@@ -25,8 +25,12 @@ const Profile = () => {
         }));
     };
 
-    // Temporarily bypassed for direct access
-    /*
+    const handleLogout = () => {
+        logout();
+        // Optional: Redirect to home or stay here to show "Sign In" message
+        // navigate('/'); 
+    };
+
     if (!user) {
         return (
             <div className="container mx-auto px-4 py-20 min-h-screen text-center">
@@ -34,13 +38,12 @@ const Profile = () => {
                 <p className="text-gray-600 mb-8">You need to be logged in to view your profile.</p>
                 <div className="p-8 border border-dashed border-gray-300 rounded-lg inline-block">
                     <p className="text-sm text-gray-500">
-                        Click the "Sign In" button in the header to access your profile.
+                        Click the "User Icon" in the header to login or register.
                     </p>
                 </div>
             </div>
         );
     }
-    */
 
     return (
         <div className="container mx-auto px-4 py-8 md:py-12 bg-gray-50 min-h-screen">
@@ -87,7 +90,7 @@ const Profile = () => {
                                 Leo Coins
                             </button>
                             <button
-                                onClick={logout}
+                                onClick={handleLogout}
                                 className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-500 hover:bg-red-50 transition-colors mt-4"
                             >
                                 <LogOut size={18} />

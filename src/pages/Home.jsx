@@ -5,6 +5,7 @@ import { Link, useParams } from 'react-router-dom';
 import { imageHelper } from '../utils/imageHelper';
 import HeroCarousel from '../components/HeroCarousel';
 import SEO from '../components/SEO';
+import { X, Check, ChevronDown, ChevronUp } from 'lucide-react';
 
 const Home = () => {
     const { category } = useParams();
@@ -17,11 +18,24 @@ const Home = () => {
     const [priceRange, setPriceRange] = useState('all');
     const [availability, setAvailability] = useState('all');
     const [selectedColor, setSelectedColor] = useState('all');
+
+    // New Filters for Neckties
+    const [selectedQuality, setSelectedQuality] = useState('all');
+    const [selectedSize, setSelectedSize] = useState('all');
+    const [selectedPattern, setSelectedPattern] = useState('all');
+
     const [isFilterOpen, setIsFilterOpen] = useState(false); // Mobile filter toggle
+    const [isSortOpen, setIsSortOpen] = useState(false); // Mobile sort toggle
+    const [openAccordion, setOpenAccordion] = useState('Sort By'); // For mobile filter accordion
 
     // Responsive Limit Logic for Featured Products
     const [limit, setLimit] = useState(8);
     const [isExpanded, setIsExpanded] = useState(false);
+
+    // Toggle Accordion Helper
+    const toggleAccordion = (section) => {
+        setOpenAccordion(openAccordion === section ? null : section);
+    };
 
     useEffect(() => {
         const updateLimit = () => {
@@ -35,6 +49,17 @@ const Home = () => {
         window.addEventListener('resize', updateLimit);
         return () => window.removeEventListener('resize', updateLimit);
     }, []);
+
+    useEffect(() => {
+        if (isFilterOpen || isSortOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'unset';
+        }
+        return () => {
+            document.body.style.overflow = 'unset';
+        };
+    }, [isFilterOpen, isSortOpen]);
 
     useEffect(() => {
         setLoading(true);
@@ -68,6 +93,21 @@ const Home = () => {
             const colorMatch = product.name.toLowerCase().includes(selectedColor.toLowerCase()) ||
                 (product.slug && product.slug.includes(selectedColor.toLowerCase()));
             if (!colorMatch) return false;
+        }
+
+        // Quality (Material) Filter
+        if (selectedQuality !== 'all') {
+            if (!product.material || product.material !== selectedQuality) return false;
+        }
+
+        // Size Filter
+        if (selectedSize !== 'all') {
+            if (!product.size || product.size !== selectedSize) return false;
+        }
+
+        // Pattern Filter
+        if (selectedPattern !== 'all') {
+            if (!product.pattern || product.pattern !== selectedPattern) return false;
         }
 
         return true;
@@ -118,9 +158,209 @@ const Home = () => {
                     <div className="w-16 h-1 bg-accent mx-auto"></div>
                 </div>
 
-                <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Filter Sidebar */}
-                    <div className={`lg:w-1/4 ${isFilterOpen ? 'block' : 'hidden lg:block'}`}>
+                <div className="flex flex-col lg:flex-row gap-8 relative">
+                    {/* Mobile Sticky Filter/Sort Bar */}
+                    <div className=" sticky top-14 z-30 bg-orange-100 border border-amber-900 flex lg:hidden border-b">
+                        <button
+                            onClick={() => setIsFilterOpen(true)}
+                            className="flex-1 py-3 text-sm font-bold uppercase tracking-widest border-r border-amber-900 hover:bg-gray-50 transition-colors"
+                        >
+                            Filter
+                        </button>
+                        <button
+                            onClick={() => setIsSortOpen(true)}
+                            className="flex-1 py-3 text-sm font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors"
+                        >
+                            Sort
+                        </button>
+                    </div>
+
+                    {/* Mobile Sort Bottom Sheet/Drawer */}
+                    {isSortOpen && (
+                        <div className="fixed inset-0 z-50 lg:hidden">
+                            <div className="absolute inset-0 bg-black/50" onClick={() => setIsSortOpen(false)}></div>
+                            <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-xl p-6 animate-slide-up">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-lg font-bold uppercase tracking-widest">Sort By</h3>
+                                    <button onClick={() => setIsSortOpen(false)}><X size={24} /></button>
+                                </div>
+                                <div className="space-y-4">
+                                    {[
+                                        { label: 'Featured', value: 'featured' },
+                                        { label: 'Price: Low to High', value: 'price-low-high' },
+                                        { label: 'Price: High to Low', value: 'price-high-low' }
+                                    ].map(option => (
+                                        <button
+                                            key={option.value}
+                                            onClick={() => {
+                                                setSortBy(option.value);
+                                                setIsSortOpen(false);
+                                            }}
+                                            className={`w-full text-left py-3 border-b border-gray-100 flex justify-between items-center ${sortBy === option.value ? 'font-bold text-black' : 'text-gray-600'}`}
+                                        >
+                                            {option.label}
+                                            {sortBy === option.value && <Check size={16} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mobile Filter Drawer (Accordion Style) */}
+                    {isFilterOpen && (
+                        <div className="fixed inset-0 z-50 bg-white lg:hidden flex flex-col animate-fade-in">
+                            {/* Header */}
+                            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                                <span className="font-bold text-lg uppercase tracking-widest">Filters</span>
+                                <button onClick={() => setIsFilterOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            {/* Scrollable Content */}
+                            <div className="flex-1 overflow-y-auto">
+                                {/* Color Accordion */}
+                                <div className="border-b border-gray-100">
+                                    <button
+                                        onClick={() => toggleAccordion('color')}
+                                        className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
+                                    >
+                                        Color
+                                        {openAccordion === 'color' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                    </button>
+                                    {openAccordion === 'color' && (
+                                        <div className="px-5 pb-5 grid grid-cols-2 gap-3 bg-gray-50/50">
+                                            {['all', 'Black', 'Blue', 'Green', 'Gold', 'Silver', 'Red', 'Pink', 'Brown'].map(color => (
+                                                <button
+                                                    key={color}
+                                                    onClick={() => setSelectedColor(color)}
+                                                    className={`flex items-center gap-3 px-3 py-2 text-xs font-bold uppercase rounded-md border transition-all ${selectedColor === color ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-700'}`}
+                                                >
+                                                    {color !== 'all' && (
+                                                        <span
+                                                            className="w-4 h-4 rounded-full border border-gray-200"
+                                                            style={{ backgroundColor: color.toLowerCase() }}
+                                                        ></span>
+                                                    )}
+                                                    {color}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Quality Accordion */}
+                                <div className="border-b border-gray-100">
+                                    <button
+                                        onClick={() => toggleAccordion('quality')}
+                                        className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
+                                    >
+                                        Quality
+                                        {openAccordion === 'quality' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                    </button>
+                                    {openAccordion === 'quality' && (
+                                        <div className="px-5 pb-5 flex flex-wrap gap-2 bg-gray-50/50">
+                                            {['all', 'Wool', 'Cotton', 'Knitted', 'Woven Silk', 'Printed Silk', 'Printed Micro', 'Woven Micro', 'Woven Polyester'].map(quality => (
+                                                <button
+                                                    key={quality}
+                                                    onClick={() => setSelectedQuality(quality)}
+                                                    className={`px-3 py-2 text-xs font-medium rounded-md border transition-all ${selectedQuality === quality ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-600'}`}
+                                                >
+                                                    {quality === 'all' ? 'All' : quality}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Size Accordion */}
+                                <div className="border-b border-gray-100">
+                                    <button
+                                        onClick={() => toggleAccordion('size')}
+                                        className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
+                                    >
+                                        Size
+                                        {openAccordion === 'size' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                    </button>
+                                    {openAccordion === 'size' && (
+                                        <div className="px-5 pb-5 space-y-2 bg-gray-50/50">
+                                            {['all', 'Skinny ( 6cm - 6.5cm )', 'Regular ( 7cm - 8.5cm )', 'Broad ( 9cm Above )', 'Long Length (68inch )'].map(size => (
+                                                <button
+                                                    key={size}
+                                                    onClick={() => setSelectedSize(size)}
+                                                    className={`w-full text-left px-3 py-2 text-xs font-medium rounded-md border transition-all ${selectedSize === size ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-600'}`}
+                                                >
+                                                    {size === 'all' ? 'All Sizes' : size}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Pattern Accordion */}
+                                <div className="border-b border-gray-100">
+                                    <button
+                                        onClick={() => toggleAccordion('pattern')}
+                                        className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
+                                    >
+                                        Pattern
+                                        {openAccordion === 'pattern' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                    </button>
+                                    {openAccordion === 'pattern' && (
+                                        <div className="px-5 pb-5 flex flex-wrap gap-2 bg-gray-50/50">
+                                            {['all', 'Dots', 'Solids', 'Polkas', 'Checks', 'Anchor', 'Stripes', 'Florals', 'Novelty', 'Paisleys', 'Abstract', 'Animals', 'Geometrics'].map(pattern => (
+                                                <button
+                                                    key={pattern}
+                                                    onClick={() => setSelectedPattern(pattern)}
+                                                    className={`px-3 py-2 text-xs font-medium rounded-md border transition-all ${selectedPattern === pattern ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-600'}`}
+                                                >
+                                                    {pattern === 'all' ? 'All' : pattern}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Price Accordion */}
+                                <div className="border-b border-gray-100">
+                                    <button
+                                        onClick={() => toggleAccordion('price')}
+                                        className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
+                                    >
+                                        Price
+                                        {openAccordion === 'price' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                    </button>
+                                    {openAccordion === 'price' && (
+                                        <div className="px-5 pb-5 space-y-2 bg-gray-50/50">
+                                            {['all', '0-500', '500-1000', '1000+'].map(range => (
+                                                <button
+                                                    key={range}
+                                                    onClick={() => setPriceRange(range)}
+                                                    className={`w-full text-left px-3 py-2 text-xs font-medium rounded-md border transition-all ${priceRange === range ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-600'}`}
+                                                >
+                                                    {range === 'all' ? 'All Prices' : range.includes('+') ? `Above ₹${range.replace('+', '')}` : `₹${range}`}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Footer / Apply Button */}
+                            <div className="p-4 border-t border-gray-100 bg-white">
+                                <button
+                                    onClick={() => setIsFilterOpen(false)}
+                                    className="w-full bg-[#C19A6B] text-white py-4 text-sm font-bold uppercase tracking-widest hover:bg-[#a6855b] transition-colors"
+                                >
+                                    Apply
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Desktop Filter Sidebar (UNCHANGED but hidden on mobile) */}
+                    <div className={`hidden lg:block lg:w-1/4`}>
                         <div className="sticky top-24 space-y-8 bg-white p-6 border border-gray-100 shadow-sm">
                             <div className="flex justify-between items-center lg:hidden mb-4">
                                 <span className="font-bold text-lg">Filters</span>
@@ -206,16 +446,81 @@ const Home = () => {
                                     ))}
                                 </div>
                             </div>
+
+                            {/* Quality Filter */}
+                            <div>
+                                <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">By Quality</h3>
+                                <div className="space-y-2">
+                                    {['all', 'Wool', 'Cotton', 'Knitted', 'Woven Silk', 'Printed Silk', 'Printed Micro', 'Woven Micro', 'Woven Polyester'].map(quality => (
+                                        <label key={quality} className="flex items-center space-x-2 cursor-pointer group">
+                                            <div className={`w-4 h-4 border flex items-center justify-center ${selectedQuality === quality ? 'border-black bg-black' : 'border-gray-300'}`}>
+                                                {selectedQuality === quality && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                                            </div>
+                                            <input
+                                                type="radio"
+                                                name="quality"
+                                                value={quality}
+                                                checked={selectedQuality === quality}
+                                                onChange={() => setSelectedQuality(quality)}
+                                                className="hidden"
+                                            />
+                                            <span className="text-sm text-gray-600 group-hover:text-black capitalize">{quality === 'all' ? 'All Qualities' : quality}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Size Filter */}
+                            <div>
+                                <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">By Size</h3>
+                                <div className="space-y-2">
+                                    {['all', 'Skinny ( 6cm - 6.5cm )', 'Regular ( 7cm - 8.5cm )', 'Broad ( 9cm Above )', 'Long Length (68inch )'].map(size => (
+                                        <label key={size} className="flex items-center space-x-2 cursor-pointer group">
+                                            <div className={`w-4 h-4 border flex items-center justify-center ${selectedSize === size ? 'border-black bg-black' : 'border-gray-300'}`}>
+                                                {selectedSize === size && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                                            </div>
+                                            <input
+                                                type="radio"
+                                                name="size"
+                                                value={size}
+                                                checked={selectedSize === size}
+                                                onChange={() => setSelectedSize(size)}
+                                                className="hidden"
+                                            />
+                                            <span className="text-sm text-gray-600 group-hover:text-black capitalize">{size === 'all' ? 'All Sizes' : size}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Pattern Filter */}
+                            <div>
+                                <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">By Pattern</h3>
+                                <div className="space-y-2">
+                                    {['all', 'Dots', 'Solids', 'Polkas', 'Checks', 'Anchor', 'Stripes', 'Florals', 'Novelty', 'Paisleys', 'Abstract', 'Animals', 'Geometrics'].map(pattern => (
+                                        <label key={pattern} className="flex items-center space-x-2 cursor-pointer group">
+                                            <div className={`w-4 h-4 border flex items-center justify-center ${selectedPattern === pattern ? 'border-black bg-black' : 'border-gray-300'}`}>
+                                                {selectedPattern === pattern && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                                            </div>
+                                            <input
+                                                type="radio"
+                                                name="pattern"
+                                                value={pattern}
+                                                checked={selectedPattern === pattern}
+                                                onChange={() => setSelectedPattern(pattern)}
+                                                className="hidden"
+                                            />
+                                            <span className="text-sm text-gray-600 group-hover:text-black capitalize">{pattern === 'all' ? 'All Patterns' : pattern}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     {/* Product Grid Area */}
                     <div className="lg:w-3/4">
-                        <div className="lg:hidden mb-4">
-                            <button onClick={() => setIsFilterOpen(true)} className="w-full border border-black py-2 uppercase font-bold text-sm tracking-wider">
-                                Filter & Sort
-                            </button>
-                        </div>
+                        {/* Mobile 'Filter & Sort' button helper removed as it's replaced by sticky bar */}
 
                         {loading ? (
                             <div className="flex justify-center items-center h-64">Loading...</div>
@@ -232,6 +537,9 @@ const Home = () => {
                                         setPriceRange('all');
                                         setAvailability('all');
                                         setSelectedColor('all');
+                                        setSelectedQuality('all');
+                                        setSelectedSize('all');
+                                        setSelectedPattern('all');
                                     }}
                                     className="text-black underline text-sm"
                                 >

@@ -1,6 +1,6 @@
 import { imageHelper } from '../utils/imageHelper';
 
-// MOCK DATA
+
 const PRODUCTS = [
     // NEW MOCK DATA FOR SIDEBAR CATEGORIES
     {
@@ -10,10 +10,13 @@ const PRODUCTS = [
         "price": 895.00,
         "category": "Necktie",
         "stock": 100,
-        "images": ["hero-slide-1.png", "hero-slide-2.png"],
+        "images": ["hero-slide-1.png", "hero-slide-2.png", "hero-slide-2.png", "hero-slide-3.png"],
         "description": "A classic silk necktie for every occasion.",
         "item_type": "Necktie",
-        "reviews": { "rating": 4.5, "count": 28 }
+        "reviews": { "rating": 4.5, "count": 28 },
+        "material": "Woven Silk",
+        "size": "Regular ( 7cm - 8.5cm )",
+        "pattern": "Stripes"
     },
     {
         "id": 202,
@@ -25,7 +28,10 @@ const PRODUCTS = [
         "images": ["hero-slide-2.png", "hero-slide-3.png"],
         "description": "Convenient zipper tie with modern design.",
         "item_type": "Necktie",
-        "reviews": { "rating": 4.2, "count": 15 }
+        "reviews": { "rating": 4.2, "count": 15 },
+        "material": "Woven Polyester",
+        "size": "Skinny ( 6cm - 6.5cm )",
+        "pattern": "Solids"
     },
     {
         "id": 203,
@@ -37,7 +43,10 @@ const PRODUCTS = [
         "images": ["hero-slide-3.png", "hero-slide-1.png"],
         "description": "Bold solid red necktie.",
         "item_type": "Necktie",
-        "reviews": { "rating": 4.8, "count": 40 }
+        "reviews": { "rating": 4.8, "count": 40 },
+        "material": "Woven Micro",
+        "size": "Broad ( 9cm Above )",
+        "pattern": "Solids"
     },
     {
         "id": 204,
@@ -49,7 +58,10 @@ const PRODUCTS = [
         "images": ["hero-slide-5.jpg"],
         "description": "Elegant black velvet bowtie.",
         "item_type": "Bowtie",
-        "reviews": { "rating": 4.6, "count": 35 }
+        "reviews": { "rating": 4.6, "count": 35 },
+        "material": "Velvet",
+        "size": "Regular",
+        "pattern": "Solids"
     },
     {
         "id": 205,
@@ -61,7 +73,10 @@ const PRODUCTS = [
         "images": ["perfect-fit.png"],
         "description": "Premium satin finish bowtie.",
         "item_type": "Bowtie",
-        "reviews": { "rating": 4.7, "count": 22 }
+        "reviews": { "rating": 4.7, "count": 22 },
+        "material": "Satin",
+        "size": "Regular",
+        "pattern": "Solids"
     },
     {
         "id": 206,
@@ -73,7 +88,10 @@ const PRODUCTS = [
         "images": ["hero-slide-4.png"],
         "description": "Intricate paisley pattern pocket square.",
         "item_type": "Pocket Square",
-        "reviews": { "rating": 4.5, "count": 18 }
+        "reviews": { "rating": 4.5, "count": 18 },
+        "material": "Printed Silk",
+        "size": "Regular",
+        "pattern": "Paisleys"
     },
     {
         "id": 207,
@@ -85,7 +103,10 @@ const PRODUCTS = [
         "images": ["hero-slide-1.png"],
         "description": "Essential solid white pocket square.",
         "item_type": "Pocket Square",
-        "reviews": { "rating": 4.9, "count": 150 }
+        "reviews": { "rating": 4.9, "count": 150 },
+        "material": "Cotton",
+        "size": "Regular",
+        "pattern": "Solids"
     },
     {
         "id": 208,
@@ -97,7 +118,10 @@ const PRODUCTS = [
         "images": ["CUFFLINK-04.jpg"],
         "description": "Luxurious gold cufflink set.",
         "item_type": "Cufflink",
-        "reviews": { "rating": 4.8, "count": 42 }
+        "reviews": { "rating": 4.8, "count": 42 },
+        "material": "Metal",
+        "size": "Regular",
+        "pattern": "Abstract"
     },
     {
         "id": 209,
@@ -109,7 +133,86 @@ const PRODUCTS = [
         "images": ["hero-slide-2.png", "hero-slide-3.png"],
         "description": "Traditional silk cravat.",
         "item_type": "Cravat",
-        "reviews": { "rating": 4.4, "count": 10 }
+        "reviews": { "rating": 4.4, "count": 10 },
+        "material": "Printed Silk",
+        "size": "Long Length (68inch )",
+        "pattern": "Paisleys"
+    },
+    // Adding more mock data to test filters
+    {
+        "id": 210,
+        "name": "Knitted Cotton Tie",
+        "slug": "knitted-cotton-tie",
+        "price": 650.00,
+        "category": "Necktie",
+        "stock": 25,
+        "images": ["hero-slide-1.png"],
+        "description": "Casual knitted cotton tie.",
+        "item_type": "Necktie",
+        "reviews": { "rating": 4.3, "count": 12 },
+        "material": "Knitted",
+        "size": "Skinny ( 6cm - 6.5cm )",
+        "pattern": "Solids"
+    },
+    {
+        "id": 211,
+        "name": "Polka Dot Silk Tie",
+        "slug": "polka-dot-silk-tie",
+        "price": 950.00,
+        "category": "Necktie",
+        "stock": 40,
+        "images": ["hero-slide-2.png"],
+        "description": "Classic polka dot pattern.",
+        "item_type": "Necktie",
+        "reviews": { "rating": 4.6, "count": 18 },
+        "material": "Printed Silk",
+        "size": "Regular ( 7cm - 8.5cm )",
+        "pattern": "Polkas"
+    },
+    {
+        "id": 212,
+        "name": "Abstract Printed Micro Tie",
+        "slug": "abstract-printed-micro-tie",
+        "price": 750.00,
+        "category": "Necktie",
+        "stock": 35,
+        "images": ["hero-slide-3.png"],
+        "description": "Modern abstract design.",
+        "item_type": "Necktie",
+        "reviews": { "rating": 4.4, "count": 22 },
+        "material": "Printed Micro",
+        "size": "Broad ( 9cm Above )",
+        "pattern": "Abstract"
+    },
+    {
+        "id": 213,
+        "name": "Checkered Wool Tie",
+        "slug": "checkered-wool-tie",
+        "price": 850.00,
+        "category": "Necktie",
+        "stock": 15,
+        "images": ["hero-slide-4.png"],
+        "description": "Warm wool tie for winter.",
+        "item_type": "Necktie",
+        "reviews": { "rating": 4.7, "count": 8 },
+        "material": "Wool",
+        "size": "Regular ( 7cm - 8.5cm )",
+        "pattern": "Checks"
+    },
+    {
+        "id": 214,
+        "name": "Floral Novelty Tie",
+        "slug": "floral-novelty-tie",
+        "price": 895.00,
+        "category": "Necktie",
+        "stock": 55,
+        "images": ["hero-slide-5.jpg"],
+        "description": "Fun floral novelty tie.",
+        "item_type": "Necktie",
+        "reviews": { "rating": 4.5, "count": 30 },
+        "material": "Woven Micro",
+        "size": "Regular ( 7cm - 8.5cm )",
+        "pattern": "Florals"
     }
 ];
 

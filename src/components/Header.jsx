@@ -167,15 +167,24 @@ const Header = ({
                     {/* CENTER: Logo */}
                     <div className="flex-1 flex justify-center">
                         <Link to="/" className={`text-2xl md:text-3xl font-serif font-black tracking-widest uppercase transition-colors ${logoColorClass}`}>
-                            Leonardi
+                            <img style={{ width: 180, height: 20 }} src='public\assets\Leonardi Font FINAL 2018.png' />
                         </Link>
                     </div>
 
                     {/* RIGHT: User, Wishlist, Cart */}
                     <div className="flex items-center justify-end gap-4 flex-1">
-                        <Link to="/account" className={`hover:text-accent transition-colors ${textColorClass}`}>
-                            <User size={20} />
-                        </Link>
+                        {user ? (
+                            <Link to="/account" className={`hover:text-accent transition-colors ${textColorClass}`}>
+                                <User size={20} />
+                            </Link>
+                        ) : (
+                            <button
+                                onClick={() => setIsAuthOpen(true)}
+                                className={`hover:text-accent transition-colors ${textColorClass}`}
+                            >
+                                <User size={20} />
+                            </button>
+                        )}
 
                         <button className={`hover:text-red-500 transition-colors relative ${textColorClass}`} onClick={() => setIsWishlistOpen(true)}>
                             <Heart size={20} />
@@ -270,9 +279,8 @@ const Header = ({
                 >
                     {/* Drawer Header with Close Button */}
                     <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                        <span className="text-2xl font-serif font-black tracking-widest uppercase text-black">
-                            MENU
-                        </span>
+                        <img style={{ width: 180, height: 20 }} src="public\assets\Leonardi Font FINAL 2018.png" alt="logo" />
+
                         <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                             <X size={24} />
                         </button>
