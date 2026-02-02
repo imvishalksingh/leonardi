@@ -75,7 +75,7 @@ const ProductDetail = () => {
                     {/* Wishlist Button - Top Right */}
                     <button
                         onClick={() => toggleWishlist(product)}
-                        className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-md transition-colors ${isInWishlist(product.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                        className={`absolute bottom-4 right-4 w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-md transition-colors ${isInWishlist(product.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                         title={isInWishlist(product.id) ? "Remove from Wishlist" : "Add to Wishlist"}
                     >
                         <Heart size={20} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
@@ -95,7 +95,7 @@ const ProductDetail = () => {
                     {/* Mobile Wishlist Button */}
                     <button
                         onClick={() => toggleWishlist(product)}
-                        className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-md transition-colors z-10 ${isInWishlist(product.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                        className={`absolute bottom-4 right-4 w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-md transition-colors z-10 ${isInWishlist(product.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                     >
                         <Heart size={20} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
                     </button>
