@@ -5,10 +5,10 @@ const NAVIGATION_TREE = [
         label: 'Necktie',
         path: '/collection/necktie',
         subs: [
-            { id: 'zipper', label: 'Zipper', path: '/collection/zipper-tie' },
-            { id: 'solid', label: 'Solid', path: '/collection/solid-tie' },
-            { id: 'silk', label: 'Silk', path: '/collection/silk-tie' },
-            { id: 'printed', label: 'Printed', path: '/collection/printed-tie' }
+            { id: 'zipper', label: 'Zipper', path: '/collection/zipper-tie', image: '/assets/hero-slide-1.png' },
+            { id: 'solid', label: 'Solid', path: '/collection/solid-tie', image: '/assets/hero-slide-2.png' },
+            { id: 'silk', label: 'Silk', path: '/collection/silk-tie', image: '/assets/hero-slide-3.png' },
+            { id: 'printed', label: 'Printed', path: '/collection/printed-tie', image: '/assets/hero-slide-4.png' }
         ]
     },
     {
@@ -16,9 +16,9 @@ const NAVIGATION_TREE = [
         label: 'Bowtie',
         path: '/collection/bowtie',
         subs: [
-            { id: 'solid-bow', label: 'Solid', path: '/collection/solid-bowtie' },
-            { id: 'open-bow', label: 'Open', path: '/collection/open-bowtie' },
-            { id: 'velvet-bow', label: 'Velvet', path: '/collection/velvet-bowtie' }
+            { id: 'solid-bow', label: 'Solid', path: '/collection/solid-bowtie', image: '/assets/hero-slide-5.jpg' },
+            { id: 'open-bow', label: 'Open', path: '/collection/open-bowtie', image: '/assets/perfect-fit.png' },
+            { id: 'velvet-bow', label: 'Velvet', path: '/collection/velvet-bowtie', image: '/assets/hero-slide-1.png' }
         ]
     },
     {
@@ -26,9 +26,9 @@ const NAVIGATION_TREE = [
         label: 'Pocket Square',
         path: '/collection/pocket-square',
         subs: [
-            { id: 'solid-ps', label: 'Solid', path: '/collection/solid-pocket-square' },
-            { id: 'silk-ps', label: 'Silk', path: '/collection/silk-pocket-square' },
-            { id: 'printed-ps', label: 'Printed Silk', path: '/collection/printed-silk-pocket-square' }
+            { id: 'solid-ps', label: 'Solid', path: '/collection/solid-pocket-square', image: '/assets/hero-slide-2.png' },
+            { id: 'silk-ps', label: 'Silk', path: '/collection/silk-pocket-square', image: '/assets/hero-slide-3.png' },
+            { id: 'printed-ps', label: 'Printed Silk', path: '/collection/printed-silk-pocket-square', image: '/assets/hero-slide-4.png' }
         ]
     },
     {

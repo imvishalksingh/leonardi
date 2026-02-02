@@ -18,17 +18,17 @@ const ProductCard = ({ product }) => {
         <>
             <div className="group relative bg-white">
                 <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
-                    <Link to={`/product/${product.slug}`}>
+                    <Link to={`/product/${product.slug}`} className="block w-full h-full">
                         <img
                             src={imageHelper(product.images[0])}
                             alt={product.name}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                         {product.images[1] && (
                             <img
                                 src={imageHelper(product.images[1])}
                                 alt={product.name}
-                                className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+                                className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-500"
                             />
                         )}
                     </Link>

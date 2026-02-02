@@ -312,20 +312,54 @@ const Header = ({
                                     </div>
 
                                     {/* Submenu */}
-                                    <div className={`overflow-hidden transition-all duration-300 bg-gray-50 ${expandedCategory === item.id ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                                        <ul className="flex flex-col py-2">
-                                            {item.subs && item.subs.map(sub => (
-                                                <li key={sub.id}>
+                                    <div className={`overflow-hidden transition-all duration-300 bg-gray-50 ${expandedCategory === item.id ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                        {/* Check if sub-items have images to determine layout */}
+                                        {item.subs && item.subs.some(sub => sub.image) ? (
+                                            <div className="grid grid-cols-3 md:grid-cols-5 gap-4 p-4">
+                                                {item.subs.map(sub => (
                                                     <Link
+                                                        key={sub.id}
                                                         to={sub.path}
-                                                        className="block px-8 py-3 text-sm text-gray-600 hover:text-black hover:font-medium transition-colors border-b border-gray-100 last:border-none"
+                                                        className="flex flex-col items-center text-center group"
                                                         onClick={() => setIsMobileMenuOpen(false)}
                                                     >
-                                                        {sub.label}
+                                                        <div className="w-20 h-20 mb-2 overflow-hidden rounded-md border border-gray-100 shadow-sm relative">
+                                                            <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+                                                            <img
+                                                                src={sub.image}
+                                                                alt={sub.label}
+                                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 relative z-10"
+                                                                onError={(e) => {
+                                                                    e.target.style.display = 'none';
+                                                                    e.target.parentElement.classList.remove('animate-pulse');
+                                                                    // Fallback text or icon could go here
+                                                                }}
+                                                                onLoad={(e) => {
+                                                                    e.target.parentElement.querySelector('.animate-pulse').style.display = 'none';
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <span className="text-[10px] font-medium text-gray-700 uppercase tracking-tight group-hover:text-black leading-tight line-clamp-2">
+                                                            {sub.label}
+                                                        </span>
                                                     </Link>
-                                                </li>
-                                            ))}
-                                        </ul>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <ul className="flex flex-col py-2">
+                                                {item.subs && item.subs.map(sub => (
+                                                    <li key={sub.id}>
+                                                        <Link
+                                                            to={sub.path}
+                                                            className="block px-8 py-3 text-sm text-gray-600 hover:text-black hover:font-medium transition-colors border-b border-gray-100 last:border-none"
+                                                            onClick={() => setIsMobileMenuOpen(false)}
+                                                        >
+                                                            {sub.label}
+                                                        </Link>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
                                     </div>
                                 </div>
                             ))}

@@ -178,8 +178,14 @@ const ProductDetail = () => {
                             {/* Row 2: Buy Now */}
                             <button
                                 onClick={() => {
-                                    handleAddToCart(false); // Don't open drawer
-                                    navigate('/checkout'); // Direct to checkout
+                                    // Buy Now: Direct checkout with single item, ignoring cart
+                                    const buyNowItem = {
+                                        ...product,
+                                        selectedSize,
+                                        selectedColor,
+                                        quantity
+                                    };
+                                    navigate('/checkout', { state: { buyNowItem } });
                                 }}
                                 className="w-full bg-white text-black border border-black uppercase font-bold tracking-wider hover:bg-gray-50 transition-colors h-12 flex items-center justify-center rounded-sm text-sm"
                             >
