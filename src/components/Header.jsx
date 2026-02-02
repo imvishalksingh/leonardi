@@ -177,10 +177,10 @@ const Header = ({
                             <User size={20} />
                         </Link>
 
-                        <button className="transition-colors relative text-red-500 hover:text-red-600" onClick={() => setIsWishlistOpen(true)}>
-                            <Heart size={20} fill="currentColor" />
+                        <button className={`hover:text-red-500 transition-colors relative ${textColorClass}`} onClick={() => setIsWishlistOpen(true)}>
+                            <Heart size={20} />
                             {wishlistCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-black text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{wishlistCount}</span>
+                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full">{wishlistCount}</span>
                             )}
                         </button>
 
