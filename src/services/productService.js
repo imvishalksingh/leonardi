@@ -356,7 +356,7 @@ export const getRelatedProducts = async (category, currentId) => {
                 // Clone the items to avoid reference issues
                 const clones = result.slice(0, 4 - result.length).map((item, index) => ({
                     ...item,
-                    id: `${item.id}-dup-${Date.now()}-${index}` // Generate unique ID for duplicates
+                    id: `${item.id}-dup-${Date.now()}-${Math.floor(Math.random() * 10000)}-${index}` // Generate unique ID for duplicates with random component
                 }));
                 result = [...result, ...clones];
             }

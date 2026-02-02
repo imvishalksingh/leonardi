@@ -19,6 +19,23 @@ const Home = () => {
     const [selectedColor, setSelectedColor] = useState('all');
     const [isFilterOpen, setIsFilterOpen] = useState(false); // Mobile filter toggle
 
+    // Responsive Limit Logic for Featured Products
+    const [limit, setLimit] = useState(8);
+    const [isExpanded, setIsExpanded] = useState(false);
+
+    useEffect(() => {
+        const updateLimit = () => {
+            const width = window.innerWidth;
+            if (width < 768) setLimit(4); // 2 rows of 2 cols
+            else if (width < 1024) setLimit(6); // 2 rows of 3 cols
+            else setLimit(8); // 2 rows of 4 cols
+        };
+
+        updateLimit(); // Initial calculation
+        window.addEventListener('resize', updateLimit);
+        return () => window.removeEventListener('resize', updateLimit);
+    }, []);
+
     useEffect(() => {
         setLoading(true);
         if (category) {
@@ -228,22 +245,7 @@ const Home = () => {
         );
     }
 
-    // Responsive Limit Logic for Featured Products
-    const [limit, setLimit] = useState(8);
-    const [isExpanded, setIsExpanded] = useState(false);
 
-    useEffect(() => {
-        const updateLimit = () => {
-            const width = window.innerWidth;
-            if (width < 768) setLimit(4); // 2 rows of 2 cols
-            else if (width < 1024) setLimit(6); // 2 rows of 3 cols
-            else setLimit(8); // 2 rows of 4 cols
-        };
-
-        updateLimit(); // Initial calculation
-        window.addEventListener('resize', updateLimit);
-        return () => window.removeEventListener('resize', updateLimit);
-    }, []);
 
     // Standard Home Page
     return (
