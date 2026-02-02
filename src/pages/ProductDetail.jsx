@@ -70,7 +70,7 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Main Image */}
-                <div className="lg:col-span-4 bg-gray-100 aspect-[1080/1440] relative overflow-hidden group">
+                <div className="hidden lg:block lg:col-span-4 bg-gray-100 aspect-[1080/1440] relative overflow-hidden group">
                     <img src={imageHelper(product.images[selectedImage])} alt={product.name} className="w-full h-full object-cover" />
                     {/* Wishlist Button - Top Right */}
                     <button
@@ -82,17 +82,23 @@ const ProductDetail = () => {
                     </button>
                 </div>
 
-                {/* Mobile Thumbnails only */}
-                <div className="lg:hidden flex gap-3 overflow-x-auto pb-2">
-                    {product.images.map((img, idx) => (
-                        <button
-                            key={idx}
-                            onClick={() => setSelectedImage(idx)}
-                            className={`border-2 ${selectedImage === idx ? 'border-black' : 'border-transparent'} w-20 h-24 flex-shrink-0 bg-gray-100`}
-                        >
-                            <img src={imageHelper(img)} alt="" className="w-full h-full object-cover" />
-                        </button>
-                    ))}
+                {/* Mobile Image Carousel */}
+                <div className="lg:hidden w-full relative bg-gray-100 aspect-[3/4]">
+                    <div className="flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar" style={{ scrollbarWidth: 'none' }}>
+                        <style>{`.no-scrollbar::-webkit-scrollbar { display: none; }`}</style>
+                        {product.images.map((img, idx) => (
+                            <div key={idx} className="w-full flex-shrink-0 snap-center relative h-full">
+                                <img src={imageHelper(img)} alt={product.name} className="w-full h-full object-cover" />
+                            </div>
+                        ))}
+                    </div>
+                    {/* Mobile Wishlist Button */}
+                    <button
+                        onClick={() => toggleWishlist(product)}
+                        className={`absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center bg-white shadow-md transition-colors z-10 ${isInWishlist(product.id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                    >
+                        <Heart size={20} fill={isInWishlist(product.id) ? "currentColor" : "none"} />
+                    </button>
                 </div>
 
                 {/* Product Info */}
