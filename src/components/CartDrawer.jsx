@@ -1,6 +1,6 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
-import { X, Trash2, ShoppingBag } from 'lucide-react';
+import { X, Trash2, ShoppingBag, ChevronUp, ChevronDown } from 'lucide-react';
 import { imageHelper } from '../utils/imageHelper';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -12,7 +12,8 @@ const CartDrawer = () => {
         removeFromCart,
         cartTotal,
         leoCoins,
-        finalTotal
+        finalTotal,
+        updateQuantity
     } = useCart();
     const navigate = useNavigate();
 
@@ -70,8 +71,24 @@ const CartDrawer = () => {
                                         </div>
 
                                         <div className="flex items-end justify-between mt-4">
-                                            <div className="text-xs font-semibold text-gray-400">
-                                                Qty: <span className="text-black">{item.quantity}</span>
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex items-center border border-gray-200 rounded-sm">
+                                                    <span className="w-8 text-center text-sm font-bold">{item.quantity}</span>
+                                                    <div className="flex flex-col border-l border-gray-200">
+                                                        <button
+                                                            onClick={() => updateQuantity(item.id, item.quantity + 1, { size: item.selectedSize, color: item.selectedColor })}
+                                                            className="px-1 hover:bg-gray-100 border-b border-gray-200 h-4 flex items-center justify-center"
+                                                        >
+                                                            <ChevronUp size={10} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => updateQuantity(item.id, Math.max(1, item.quantity - 1), { size: item.selectedSize, color: item.selectedColor })}
+                                                            className="px-1 hover:bg-gray-100 h-4 flex items-center justify-center"
+                                                        >
+                                                            <ChevronDown size={10} />
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div className="font-bold text-sm">
                                                 ₹{(item.price * item.quantity).toFixed(2)}
@@ -93,18 +110,10 @@ const CartDrawer = () => {
 
 
                         <div className="space-y-2 border-t border-gray-200 pt-4">
-                            <div className="flex justify-between text-sm text-gray-600 uppercase tracking-wide">
-                                <span>Subtotal</span>
-                                <span>₹{cartTotal.toFixed(2)}</span>
-                            </div>
-
-
-
-                            <div className="flex justify-between text-lg font-bold uppercase tracking-wider pt-2 border-t border-gray-100">
+                            <div className="flex justify-between text-lg font-bold uppercase tracking-wider">
                                 <span>Total</span>
                                 <span>₹{finalTotal.toFixed(2)}</span>
                             </div>
-                            <p className="text-[10px] text-gray-400 text-center">Shipping & taxes calculated at checkout</p>
                         </div>
 
                         <button
@@ -112,7 +121,7 @@ const CartDrawer = () => {
                                 setIsCartOpen(false);
                                 navigate('/checkout');
                             }}
-                            className="w-full bg-black text-white py-4 uppercase font-bold tracking-[0.2em] hover:bg-gray-800 transition-all duration-300 text-xs"
+                            className="w-full bg-[#C19A6B] text-white py-4 uppercase font-bold tracking-[0.2em] hover:bg-[#a6855b] transition-all duration-300 text-xs"
                         >
                             Checkout
                         </button>

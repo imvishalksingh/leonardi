@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Eye, X } from 'lucide-react';
+import { Eye, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { imageHelper } from '../utils/imageHelper';
 import { Link } from 'react-router-dom';
@@ -78,10 +78,16 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                     </div>
 
                     <div className="flex gap-4">
-                        <div className="flex border border-gray-300 w-24 items-center h-10">
-                            <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-8 h-full flex items-center justify-center hover:bg-gray-50">-</button>
-                            <input type="text" readOnly value={quantity} className="flex-grow text-center w-full h-full border-x border-gray-300 outline-none text-sm" />
-                            <button onClick={() => setQuantity(quantity + 1)} className="w-8 h-full flex items-center justify-center hover:bg-gray-50">+</button>
+                        <div className="flex border border-gray-300 w-24 items-center h-10 px-3 justify-between">
+                            <span className="font-bold text-sm w-8 text-center">{quantity}</span>
+                            <div className="flex flex-col border-l border-gray-300 h-full">
+                                <button onClick={() => setQuantity(quantity + 1)} className="px-1 h-5 flex items-center justify-center hover:bg-gray-50 border-b border-gray-300">
+                                    <ChevronUp size={12} />
+                                </button>
+                                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-1 h-5 flex items-center justify-center hover:bg-gray-50">
+                                    <ChevronDown size={12} />
+                                </button>
+                            </div>
                         </div>
                         <button
                             onClick={handleAddToCart}

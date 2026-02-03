@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, ChevronRight, Plus, Minus } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, ChevronUp, ChevronRight, Plus, Minus } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { getNavigationTree } from '../services/navigationService';
@@ -97,7 +97,7 @@ const Header = ({
             {/* Top Bar Removed */}
 
             <header className={`transition-all duration-300 z-50 w-full border-b sticky top-0 bg-white shadow-sm ${borderColorClass}`}>
-                <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
+                <div className="flex w-full w-[95%] max-w-[1800px] mx-auto px-4 lg:px-12 h-16 items-center justify-between gap-4">
 
                     {/* LEFT: Menu Toggle & Search Bar */}
                     <div className="flex items-center gap-4 flex-1 justify-start">
@@ -166,8 +166,8 @@ const Header = ({
 
                     {/* CENTER: Logo */}
                     <div className="flex-1 flex justify-center">
-                        <Link to="/" className={`text-2xl md:text-3xl font-serif font-black tracking-widest uppercase transition-colors ${logoColorClass}`}>
-                            <img style={{ width: 180, height: 20 }} src='public\assets\Leonardi Font FINAL 2018.png' />
+                        <Link to="/" className={`font-serif font-black tracking-widest uppercase transition-colors ${logoColorClass}`}>
+                            <img className="h-8 md:h-5 w-auto object-contain" src='/assets/Leonardi Font FINAL 2018.png' alt="Leonardi" />
                         </Link>
                     </div>
 
@@ -279,7 +279,7 @@ const Header = ({
                 >
                     {/* Drawer Header with Close Button */}
                     <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                        <img style={{ width: 180, height: 20 }} src="public\assets\Leonardi Font FINAL 2018.png" alt="logo" />
+                        <img className="h-5 w-auto object-contain" src="/assets/Leonardi Font FINAL 2018.png" alt="Leonardi" />
 
                         <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
                             <X size={24} />
@@ -311,9 +311,9 @@ const Header = ({
                                             >
                                                 {/* Plus / Minus Icons for Accordion */}
                                                 {expandedCategory === item.id ? (
-                                                    <Minus size={20} strokeWidth={1.5} />
+                                                    <ChevronUp size={20} strokeWidth={1.5} />
                                                 ) : (
-                                                    <Plus size={20} strokeWidth={1.5} />
+                                                    <ChevronDown size={20} strokeWidth={1.5} />
                                                 )}
                                             </button>
                                         )}

@@ -67,12 +67,12 @@ const ProductCard = ({ product }) => {
                     )}
                 </div>
 
-                <div className="pt-4 text-center">
-                    <Link to={`/product/${product.slug}`} className="block text-sm text-gray-900 hover:text-accent font-medium line-clamp-2 min-h-[40px] px-2 mb-2">
+                <div className="pt-3 text-center">
+                    <Link to={`/product/${product.slug}`} className="block text-sm text-gray-900 hover:text-accent font-medium line-clamp-2 px-2 mb-1">
                         {product.name}
                     </Link>
 
-                    <div className="flex justify-center items-center space-x-2 mb-3">
+                    <div className="flex justify-center items-center space-x-2 mb-2">
                         <span className="text-black font-semibold">₹{product.price.toFixed(2)}</span>
                         {product.compare_at_price && (
                             <span className="text-gray-400 text-sm line-through">₹{product.compare_at_price.toFixed(2)}</span>

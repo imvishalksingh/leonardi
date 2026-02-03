@@ -64,6 +64,15 @@ export const CartProvider = ({ children }) => {
         ));
     };
 
+    const updateQuantity = (itemId, quantity, options = {}) => {
+        if (quantity < 1) return;
+        setCartItems(prev => prev.map(item =>
+            (item.id === itemId && item.selectedSize === options.size && item.selectedColor === options.color)
+                ? { ...item, quantity }
+                : item
+        ));
+    };
+
     const applyDiscount = (code) => {
         if (code.toUpperCase() === 'SAVE10') {
             setDiscountCode(code);
@@ -130,7 +139,8 @@ export const CartProvider = ({ children }) => {
         toggleRedeemCoins,
         isRedeemingCoins,
         coinDiscount,
-        finalTotal
+        finalTotal,
+        updateQuantity
     };
 
     return (

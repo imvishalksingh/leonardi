@@ -7,6 +7,8 @@ import HeroCarousel from '../components/HeroCarousel';
 import SEO from '../components/SEO';
 import { X, Check, ChevronDown, ChevronUp } from 'lucide-react';
 
+import Footer from '../components/Footer';
+
 const Home = () => {
     const { category } = useParams();
     const [products, setProducts] = useState([]);
@@ -51,15 +53,20 @@ const Home = () => {
     }, []);
 
     useEffect(() => {
+        if (category && window.innerWidth < 1024) {
+            // Optional: Lock body scroll if needed, but the fixed height container should handle it.
+            // document.body.style.overflow = 'hidden'; 
+        }
         if (isFilterOpen || isSortOpen) {
             document.body.style.overflow = 'hidden';
         } else {
+            // Restore based on context if needed, but for now just unset
             document.body.style.overflow = 'unset';
         }
         return () => {
             document.body.style.overflow = 'unset';
         };
-    }, [isFilterOpen, isSortOpen]);
+    }, [isFilterOpen, isSortOpen, category]);
 
     useEffect(() => {
         setLoading(true);
@@ -146,34 +153,40 @@ const Home = () => {
     // If viewing a specific collection
     if (category) {
         return (
-            <div className="container mx-auto px-4 py-8 min-h-screen">
+            <div className="w-full max-w-[1800px] mx-auto lg:px-12 lg:py-8 h-[calc(100vh-64px)] lg:h-auto lg:min-h-screen flex flex-col lg:block">
                 <SEO
                     title={`${category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Collection`}
                     description={`Shop the exclusive ${category.replace(/-/g, ' ')} collection at Leonardi. Premium accessories for the modern wardrobe.`}
                 />
-                <div className="mb-8 text-center">
-                    <h1 className="text-3xl font-serif font-bold uppercase tracking-widest mb-2">
-                        {category.replace('-', ' ')} Collection
-                    </h1>
-                    <div className="w-16 h-1 bg-accent mx-auto"></div>
-                </div>
 
-                <div className="flex flex-col lg:flex-row gap-8 relative">
-                    {/* Mobile Sticky Filter/Sort Bar */}
-                    <div className=" sticky top-14 z-30 bg-orange-100 border border-amber-900 flex lg:hidden border-b">
+                {/* Fixed Header Container for Mobile (Non-scrolling part) */}
+                <div className="flex-shrink-0 bg-white z-40 shadow-sm lg:static lg:bg-transparent lg:z-auto lg:shadow-none pb-4">
+                    <div className="py-4 lg:mb-8 text-center bg-white px-4">
+                        <h1 className="text-xl md:text-3xl font-serif font-bold uppercase tracking-widest mb-2">
+                            {category.replace('-', ' ')} Collection
+                        </h1>
+                        <div className="w-16 h-1 bg-accent mx-auto"></div>
+                    </div>
+
+                    {/* Mobile Filter/Sort Bar */}
+                    <div className="mx-4 flex lg:hidden border border-[#C19A6B] divide-x divide-[#C19A6B] bg-orange-50/50">
                         <button
                             onClick={() => setIsFilterOpen(true)}
-                            className="flex-1 py-3 text-sm font-bold uppercase tracking-widest border-r border-amber-900 hover:bg-gray-50 transition-colors"
+                            className="flex-1 py-3 text-sm font-bold uppercase tracking-widest hover:bg-orange-100 transition-colors text-black"
                         >
                             Filter
                         </button>
                         <button
                             onClick={() => setIsSortOpen(true)}
-                            className="flex-1 py-3 text-sm font-bold uppercase tracking-widest hover:bg-gray-50 transition-colors"
+                            className="flex-1 py-3 text-sm font-bold uppercase tracking-widest hover:bg-orange-100 transition-colors text-black"
                         >
                             Sort
                         </button>
                     </div>
+                </div>
+
+                <div className="flex flex-col lg:flex-row gap-8 relative flex-1 overflow-y-auto w-full lg:overflow-visible pb-8 lg:pb-0 px-4 lg:px-0 pt-8 lg:pt-0">
+                    {/* Mobile Sticky Filter/Sort Bar Removed from here */}
 
                     {/* Mobile Sort Bottom Sheet/Drawer */}
                     {isSortOpen && (
@@ -207,11 +220,18 @@ const Home = () => {
                         </div>
                     )}
 
-                    {/* Mobile Filter Drawer (Accordion Style) */}
-                    {isFilterOpen && (
-                        <div className="fixed inset-0 z-50 bg-white lg:hidden flex flex-col animate-fade-in">
+                    {/* Mobile Filter Drawer (Right-Side Slide) */}
+                    <div className={`fixed inset-0 z-50 lg:hidden transition-visibility duration-300 ${isFilterOpen ? 'visible' : 'invisible'}`}>
+                        {/* Backdrop */}
+                        <div
+                            className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${isFilterOpen ? 'opacity-100' : 'opacity-0'}`}
+                            onClick={() => setIsFilterOpen(false)}
+                        ></div>
+
+                        {/* Drawer */}
+                        <div className={`absolute top-0 right-0 h-full w-4/5 max-w-xs bg-white shadow-xl transform transition-transform duration-300 flex flex-col ${isFilterOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                             {/* Header */}
-                            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                            <div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
                                 <span className="font-bold text-lg uppercase tracking-widest">Filters</span>
                                 <button onClick={() => setIsFilterOpen(false)} className="p-2 hover:bg-gray-100 rounded-full">
                                     <X size={24} />
@@ -348,7 +368,7 @@ const Home = () => {
                             </div>
 
                             {/* Footer / Apply Button */}
-                            <div className="p-4 border-t border-gray-100 bg-white">
+                            <div className="p-4 border-t border-gray-100 bg-white shrink-0">
                                 <button
                                     onClick={() => setIsFilterOpen(false)}
                                     className="w-full bg-[#C19A6B] text-white py-4 text-sm font-bold uppercase tracking-widest hover:bg-[#a6855b] transition-colors"
@@ -357,7 +377,7 @@ const Home = () => {
                                 </button>
                             </div>
                         </div>
-                    )}
+                    </div>
 
                     {/* Desktop Filter Sidebar (UNCHANGED but hidden on mobile) */}
                     <div className={`hidden lg:block lg:w-1/4`}>
@@ -547,6 +567,11 @@ const Home = () => {
                                 </button>
                             </div>
                         )}
+
+                        {/* Mobile Footer in Scroll View */}
+                        <div className="lg:hidden mt-8 mb-4">
+                            <Footer />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -562,11 +587,11 @@ const Home = () => {
                 title="Premium Fashion & Accessories"
                 description="Discover Leonardi's exquisite collection of brooches, neckties, belts, and more. Handcrafted luxury for discerning tastes."
             />
-            <section className="container mx-auto px-4">
+            <section className="w-full max-w-[1800px] mx-auto px-4 lg:px-12">
                 <HeroCarousel />
             </section>
 
-            <section className="container mx-auto px-4">
+            <section className="w-full max-w-[1800px] mx-auto px-4 lg:px-12">
                 <h2 className="text-xl font-bold text-center mb-8 uppercase tracking-widest">Shop By Category</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {categories.map((cat, idx) => (
@@ -587,7 +612,7 @@ const Home = () => {
                 </div>
             </section>
 
-            <section className="container mx-auto px-4">
+            <section className="w-full max-w-[1800px] mx-auto px-4 lg:px-12">
                 <div className="flex justify-between items-center mb-8">
                     <h2 className="text-xl font-bold uppercase tracking-widest">Featured Products</h2>
                     <button
@@ -602,7 +627,7 @@ const Home = () => {
             </section>
 
             {/* <section className="bg-gray-50 py-12">
-                <div className="container mx-auto px-4 grid md:grid-cols-2 gap-10 items-center">
+                <div className="w-full max-w-[1800px] mx-auto px-4 lg:px-12 grid md:grid-cols-2 gap-10 items-center">
                     <div className="aspect-[4/3] bg-gray-200 relative overflow-hidden">
                         <img
                             src={imageHelper('perfect-fit.png')}
@@ -634,7 +659,7 @@ const Home = () => {
                 </div>
             </section> */}
 
-            <section className="container mx-auto px-4">
+            <section className="w-full max-w-[1800px] mx-auto px-4 lg:px-12">
                 <div className="flex justify-center space-x-8 mb-8 border-b border-gray-100">
                     {['best_sellers', 'on_sale', 'new_arrivals'].map(tab => (
                         <button

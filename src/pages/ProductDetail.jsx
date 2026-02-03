@@ -4,7 +4,7 @@ import { getProductBySlug, getRelatedProducts } from '../services/productService
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { imageHelper } from '../utils/imageHelper';
-import { Star, Truck, ShieldCheck, Ruler, Heart } from 'lucide-react';
+import { Star, Truck, ShieldCheck, Ruler, Heart, ChevronUp, ChevronDown } from 'lucide-react';
 import ProductCard from '../components/ProductCard';
 import SEO from '../components/SEO';
 
@@ -20,9 +20,17 @@ const ProductDetail = () => {
     const [selectedColor, setSelectedColor] = useState('Black');
     const [activeTab, setActiveTab] = useState('description');
     const [showSizeGuide, setShowSizeGuide] = useState(false);
+    const [activeMobileImage, setActiveMobileImage] = useState(0);
 
     const { addToCart } = useCart();
     const { isInWishlist, toggleWishlist } = useWishlist();
+
+    const handleScroll = (e) => {
+        const scrollLeft = e.target.scrollLeft;
+        const width = e.target.offsetWidth;
+        const index = Math.round(scrollLeft / width);
+        setActiveMobileImage(index);
+    };
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -83,8 +91,12 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Mobile Image Carousel */}
-                <div className="lg:hidden w-full relative bg-gray-100 aspect-[3/4]">
-                    <div className="flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar" style={{ scrollbarWidth: 'none' }}>
+                <div className="lg:hidden w-full relative bg-gray-100 aspect-[3/4] group">
+                    <div
+                        className="flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar"
+                        style={{ scrollbarWidth: 'none' }}
+                        onScroll={handleScroll}
+                    >
                         <style>{`.no-scrollbar::-webkit-scrollbar { display: none; }`}</style>
                         {product.images.map((img, idx) => (
                             <div key={idx} className="w-full flex-shrink-0 snap-center relative h-full">
@@ -92,6 +104,17 @@ const ProductDetail = () => {
                             </div>
                         ))}
                     </div>
+
+                    {/* Scroll Indicators */}
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
+                        {product.images.map((_, idx) => (
+                            <div
+                                key={idx}
+                                className={`w-2 h-2 rounded-full transition-colors duration-300 ${activeMobileImage === idx ? 'bg-[#C19A6B]' : 'bg-gray-300/80'}`}
+                            ></div>
+                        ))}
+                    </div>
+
                     {/* Mobile Wishlist Button */}
                     <button
                         onClick={() => toggleWishlist(product)}
@@ -162,10 +185,22 @@ const ProductDetail = () => {
                         <div className="flex flex-col gap-4 pt-4">
                             {/* Row 1: Quantity + Add to Cart */}
                             <div className="flex gap-4 w-full">
-                                <div className="flex border border-gray-300 w-1/2 items-center h-12">
-                                    <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-10 h-full flex items-center justify-center hover:bg-gray-50">-</button>
-                                    <input type="text" readOnly value={quantity} className="flex-grow text-center w-full h-full border-x border-gray-300 outline-none" />
-                                    <button onClick={() => setQuantity(quantity + 1)} className="w-10 h-full flex items-center justify-center hover:bg-gray-50">+</button>
+                                <div className="flex border border-gray-300 w-1/2 items-center h-12 px-4 justify-between">
+                                    <span className="font-bold text-lg">{quantity}</span>
+                                    <div className="flex flex-col border-l border-gray-300 h-full">
+                                        <button
+                                            onClick={() => setQuantity(quantity + 1)}
+                                            className="px-2 h-6 flex items-center justify-center hover:bg-gray-50 border-b border-gray-300"
+                                        >
+                                            <ChevronUp size={14} />
+                                        </button>
+                                        <button
+                                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                            className="px-2 h-6 flex items-center justify-center hover:bg-gray-50"
+                                        >
+                                            <ChevronDown size={14} />
+                                        </button>
+                                    </div>
                                 </div>
                                 <button
                                     onClick={() => handleAddToCart(false)}
@@ -187,7 +222,7 @@ const ProductDetail = () => {
                                     };
                                     navigate('/checkout', { state: { buyNowItem } });
                                 }}
-                                className="w-full bg-white text-black border border-black uppercase font-bold tracking-wider hover:bg-gray-50 transition-colors h-12 flex items-center justify-center rounded-sm text-sm"
+                                className="w-full bg-[#C19A6B] text-white border border-[#C19A6B] uppercase font-bold tracking-wider hover:bg-[#a6855b] transition-colors h-12 flex items-center justify-center rounded-sm text-sm"
                             >
                                 Buy Now
                             </button>

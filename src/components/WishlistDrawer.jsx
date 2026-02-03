@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, ShoppingBag } from 'lucide-react';
+import { X, ShoppingBag, HeartCrack, HeartPlus } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { imageHelper } from '../utils/imageHelper';
@@ -32,7 +32,7 @@ const WishlistDrawer = ({ isOpen, onClose }) => {
                 <div className="flex-grow overflow-y-auto p-6 scrollbar-thin">
                     {wishlistItems.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-center space-y-4">
-                            <span className="text-4xl">💔</span>
+                            <span className="text-4xl text-gray-300"><HeartPlus size={48} /></span>
                             <p className="text-gray-500">Your wishlist is empty.</p>
                             <Link to="/" onClick={onClose} className="text-black underline font-bold">Start Shopping</Link>
                         </div>

@@ -64,7 +64,7 @@ const Checkout = () => {
     // Reusable Order Summary Content
     const OrderSummaryContent = ({ isMobile }) => (
         <div className={isMobile ? "text-sm" : ""}>
-            <div className={`space-y-${isMobile ? '3' : '4'} ${isMobile ? 'pb-4' : 'border-b border-gray-100 pb-6'} max-h-[400px] overflow-y-auto scrollbar-thin`}>
+            <div className={`space-y-${isMobile ? '3' : '4'} ${isMobile ? 'pb-4' : 'border-b border-gray-100 pb-6'} p-2 max-h-[400px] overflow-y-auto scrollbar-thin`}>
                 {effectiveCartItems.map((item, idx) => (
                     <div key={idx} className={`flex ${isMobile ? 'gap-3 items-center' : 'gap-4'}`}>
                         <div className={`${isMobile ? 'w-12 h-16 border border-gray-100' : 'w-16 h-20 bg-gray-100'} relative flex-shrink-0`}>
