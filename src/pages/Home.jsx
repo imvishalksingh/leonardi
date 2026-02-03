@@ -569,7 +569,7 @@ const Home = () => {
                         )}
 
                         {/* Mobile Footer in Scroll View */}
-                        <div className="lg:hidden mt-8 mb-4">
+                        <div className="lg:hidden mt-0 mb-4">
                             <Footer />
                         </div>
                     </div>
@@ -582,7 +582,7 @@ const Home = () => {
 
     // Standard Home Page
     return (
-        <div className="space-y-12 pb-16">
+        <div className="space-y-12 pb-0">
             <SEO
                 title="Premium Fashion & Accessories"
                 description="Discover Leonardi's exquisite collection of brooches, neckties, belts, and more. Handcrafted luxury for discerning tastes."

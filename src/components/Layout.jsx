@@ -26,11 +26,11 @@ const Layout = ({ children }) => {
                 setIsAuthOpen={setIsAuthOpen}
             />
 
-            <main className="flex-grow pb-16 md:pb-0">
+            <main className="flex-grow">
                 {children}
             </main>
 
-            <div className={isCollectionPage ? 'hidden lg:block' : ''}>
+            <div className={`${isCollectionPage ? 'hidden lg:block' : ''} pb-16 md:pb-0`}>
                 <Footer />
             </div>
 

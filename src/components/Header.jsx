@@ -167,7 +167,7 @@ const Header = ({
                     {/* CENTER: Logo */}
                     <div className="flex-1 flex justify-center">
                         <Link to="/" className={`font-serif font-black tracking-widest uppercase transition-colors ${logoColorClass}`}>
-                            <img className="h-8 md:h-5 w-auto object-contain" src='/assets/Leonardi Font FINAL 2018.png' alt="Leonardi" />
+                            <img className="h-12 md:h-5 w-auto object-contain" src='/assets/Leonardi Font FINAL 2018.png' alt="Leonardi" />
                         </Link>
                     </div>
 
