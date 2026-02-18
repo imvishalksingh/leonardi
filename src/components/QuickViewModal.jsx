@@ -5,15 +5,18 @@ import { imageHelper } from '../utils/imageHelper';
 import { Link } from 'react-router-dom';
 
 const QuickViewModal = ({ product, isOpen, onClose }) => {
-    const [selectedSize, setSelectedSize] = useState('M');
-    const [selectedColor, setSelectedColor] = useState('Black');
     const [quantity, setQuantity] = useState(1);
     const { addToCart } = useCart();
 
     if (!isOpen || !product) return null;
 
+    const price = typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0;
+    const colorName = product.color?.name || 'Black';
+    const colorCode = product.color?.code || colorName.toLowerCase();
+    const sizeName = product.size || '';
+
     const handleAddToCart = () => {
-        addToCart(product, quantity, { size: selectedSize, color: selectedColor, openDrawer: false });
+        addToCart(product, quantity, { size: sizeName, color: colorName, openDrawer: false });
         onClose();
     };
 
@@ -40,41 +43,37 @@ const QuickViewModal = ({ product, isOpen, onClose }) => {
                 {/* Details Section */}
                 <div className="md:w-1/2 p-8 flex flex-col justify-center overflow-y-auto">
                     <h2 className="text-2xl font-serif font-bold mb-2">{product.name}</h2>
-                    <div className="text-xl font-bold mb-6">₹{product.price.toFixed(2)}</div>
+                    <div className="text-xl font-bold mb-6">₹{price.toFixed(2)}</div>
 
                     <p className="text-gray-600 text-sm mb-6 line-clamp-3">
-                        Elevate your wardrobe with this exquisite piece. Crafted with precision and attention to detail, it features premium materials ensuring both durability and style.
+                        {product.description || 'Elevate your wardrobe with this exquisite piece. Crafted with precision and attention to detail, it features premium materials ensuring both durability and style.'}
                     </p>
 
                     <div className="space-y-4 mb-8">
+                        {/* Color */}
                         <div>
-                            <span className="text-xs font-bold uppercase tracking-wider mb-2 block">Color: {selectedColor}</span>
+                            <span className="text-xs font-bold uppercase tracking-wider mb-2 block">Color: {colorName}</span>
                             <div className="flex flex-wrap gap-2">
-                                {['Blue', 'Red', 'Black'].map(color => (
-                                    <button
-                                        key={color}
-                                        onClick={() => setSelectedColor(color)}
-                                        className={`w-6 h-6 rounded-full border-2 ${selectedColor === color ? 'border-black' : 'border-transparent'} ring-1 ring-gray-200`}
-                                        style={{ backgroundColor: color.toLowerCase() }}
-                                    />
-                                ))}
+                                <button
+                                    className="w-6 h-6 rounded-full border-2 border-black ring-1 ring-gray-200"
+                                    style={{ backgroundColor: colorCode }}
+                                />
                             </div>
                         </div>
 
-                        <div>
-                            <span className="text-xs font-bold uppercase tracking-wider mb-2 block">Size: {selectedSize}</span>
-                            <div className="flex flex-wrap gap-2">
-                                {['S', 'M', 'L', 'XL'].map(size => (
+                        {/* Size */}
+                        {sizeName && (
+                            <div>
+                                <span className="text-xs font-bold uppercase tracking-wider mb-2 block">Size: {sizeName}</span>
+                                <div className="flex flex-wrap gap-2">
                                     <button
-                                        key={size}
-                                        onClick={() => setSelectedSize(size)}
-                                        className={`w-10 h-8 border text-xs font-medium ${selectedSize === size ? 'bg-black text-white border-black' : 'bg-white text-black border-gray-300 hover:border-black'}`}
+                                        className="px-3 h-8 border text-xs font-medium bg-black text-white border-black"
                                     >
-                                        {size}
+                                        {sizeName}
                                     </button>
-                                ))}
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
 
                     <div className="flex gap-4">

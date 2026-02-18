@@ -1,8 +1,8 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, ShoppingBag, Heart, User } from 'lucide-react';
-import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 
 const BottomNav = ({ onOpenMenu, onOpenWishlist, onOpenAuth }) => {
     const location = useLocation();

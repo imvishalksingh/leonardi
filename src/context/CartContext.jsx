@@ -1,150 +1,107 @@
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const CartContext = createContext();
 
-export const useCart = () => {
-    const context = useContext(CartContext);
-    if (!context) {
-        throw new Error('useCart must be used within a CartProvider');
-    }
-    return context;
-};
+export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-    // Initialize from localStorage
-    const [cartItems, setCartItems] = useState(() => {
-        try {
-            const saved = localStorage.getItem('leonardi_cart');
-            return saved ? JSON.parse(saved) : [];
-        } catch (error) {
-            console.error("Failed to load cart from localStorage", error);
-            return [];
-        }
-    });
+    const [cartItems, setCartItems] = useState([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [leoCoins, setLeoCoins] = useState(0); // Mock or fetch from user
 
-    const [discountCode, setDiscountCode] = useState('');
-    const [discountAmount, setDiscountAmount] = useState(0);
-    const [isRedeemingCoins, setIsRedeemingCoins] = useState(false);
+    // Load cart from local storage
+    useEffect(() => {
+        const savedCart = localStorage.getItem('cart');
+        if (savedCart) {
+            try {
+                setCartItems(JSON.parse(savedCart));
+            } catch (e) {
+                console.error('Failed to parse cart', e);
+            }
+        }
+    }, []);
 
-    // Persist to localStorage whenever cartItems changes
-    React.useEffect(() => {
-        localStorage.setItem('leonardi_cart', JSON.stringify(cartItems));
+    // Save cart to local storage
+    useEffect(() => {
+        localStorage.setItem('cart', JSON.stringify(cartItems));
     }, [cartItems]);
 
     const addToCart = (product, quantity = 1, options = {}) => {
-        const { openDrawer = true, ...restOptions } = options;
-
         setCartItems(prev => {
-            const existingItem = prev.find(item =>
+            const existingItemIndex = prev.findIndex(item =>
                 item.id === product.id &&
-                item.selectedSize === restOptions.size &&
-                item.selectedColor === restOptions.color
+                item.selectedSize === options.size &&
+                item.selectedColor === options.color
             );
 
-            if (existingItem) {
-                return prev.map(item =>
-                    (item.id === product.id && item.selectedSize === restOptions.size && item.selectedColor === restOptions.color)
-                        ? { ...item, quantity: item.quantity + quantity }
-                        : item
-                );
+            if (existingItemIndex > -1) {
+                const newCart = [...prev];
+                newCart[existingItemIndex].quantity += quantity;
+                return newCart;
             } else {
-                return [...prev, { ...product, quantity, selectedSize: restOptions.size, selectedColor: restOptions.color }];
+                return [...prev, {
+                    ...product,
+                    quantity,
+                    selectedSize: options.size,
+                    selectedColor: options.color
+                }];
             }
         });
 
-        if (openDrawer) {
+        if (options.openDrawer) {
             setIsCartOpen(true);
         }
     };
 
-    const removeFromCart = (itemId, options = {}) => {
+    const removeFromCart = (productId, options = {}) => {
         setCartItems(prev => prev.filter(item =>
-            !(item.id === itemId && item.selectedSize === options.size && item.selectedColor === options.color)
+            !(item.id === productId &&
+                item.selectedSize === options.size &&
+                item.selectedColor === options.color)
         ));
     };
 
-    const updateQuantity = (itemId, quantity, options = {}) => {
-        if (quantity < 1) return;
-        setCartItems(prev => prev.map(item =>
-            (item.id === itemId && item.selectedSize === options.size && item.selectedColor === options.color)
-                ? { ...item, quantity }
-                : item
-        ));
+    const updateQuantity = (productId, newQuantity, options = {}) => {
+        if (newQuantity < 1) return;
+        setCartItems(prev => prev.map(item => {
+            if (item.id === productId &&
+                item.selectedSize === options.size &&
+                item.selectedColor === options.color) {
+                return { ...item, quantity: newQuantity };
+            }
+            return item;
+        }));
     };
 
-    const applyDiscount = (code) => {
-        if (code.toUpperCase() === 'SAVE10') {
-            setDiscountCode(code);
-            setDiscountAmount(cartTotal * 0.10); // 10% off
-            return { success: true, message: 'Coupon applied successfully!' };
-        } else if (code.toUpperCase() === 'SAVE20') {
-            setDiscountCode(code);
-            setDiscountAmount(cartTotal * 0.20); // 20% off
-            return { success: true, message: 'Coupon applied successfully!' };
-        }
-        return { success: false, message: 'Invalid coupon code' };
+    const clearCart = () => {
+        setCartItems([]);
     };
 
-    const removeDiscount = () => {
-        setDiscountCode('');
-        setDiscountAmount(0);
-    };
+    const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
-    const toggleRedeemCoins = () => {
-        setIsRedeemingCoins(!isRedeemingCoins);
-    };
+    const cartTotal = cartItems.reduce((acc, item) => {
+        const price = typeof item.price === 'number' ? item.price : parseFloat(item.price) || 0;
+        return acc + (price * item.quantity);
+    }, 0);
 
-    const cartTotal = useMemo(() => {
-        return cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-    }, [cartItems]);
-
-    const coinDiscount = useMemo(() => {
-        // Mock logic: user has 500 coins, 10 coins = 1 rupee.
-        // Or simply: Redeem Max 100 coins = ₹100 off.
-        // Let's say user has 'leoCoins' earned from previous orders? 
-        // For now, let's assume we can redeem the *current* session's earned coins (as if they were existing balance) for demo purposes, 
-        // OR better: Mock a "User Balance" separate from "Coins earning this order".
-        // Let's assume user has 200 coins balance = ₹50 off.
-        return isRedeemingCoins ? 50 : 0;
-    }, [isRedeemingCoins]);
-
-    const finalTotal = useMemo(() => {
-        let total = cartTotal - discountAmount - coinDiscount;
-        return total > 0 ? total : 0;
-    }, [cartTotal, discountAmount, coinDiscount]);
-
-
-    const cartCount = useMemo(() => {
-        return cartItems.reduce((count, item) => count + item.quantity, 0);
-    }, [cartItems]);
-
-    const leoCoins = useMemo(() => {
-        return Math.floor(cartTotal * 0.05);
-    }, [cartTotal]);
-
-    const value = {
-        cartItems,
-        addToCart,
-        removeFromCart,
-        isCartOpen,
-        setIsCartOpen,
-        cartTotal,
-        cartCount,
-        leoCoins,
-        applyDiscount,
-        removeDiscount,
-        discountCode,
-        discountAmount,
-        toggleRedeemCoins,
-        isRedeemingCoins,
-        coinDiscount,
-        finalTotal,
-        updateQuantity
-    };
+    // Mock calculations for now
+    const shipping = 0;
+    const finalTotal = cartTotal + shipping;
 
     return (
-        <CartContext.Provider value={value}>
+        <CartContext.Provider value={{
+            cartItems,
+            addToCart,
+            removeFromCart,
+            updateQuantity,
+            clearCart,
+            cartCount,
+            isCartOpen,
+            setIsCartOpen,
+            cartTotal,
+            finalTotal,
+            leoCoins
+        }}>
             {children}
         </CartContext.Provider>
     );

@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, ChevronUp, ChevronRight, Plus, Minus } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { getNavigationTree } from '../services/navigationService';
+import { getProducts } from '../services/productService';
+import { imageHelper } from '../utils/imageHelper';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
-import { getNavigationTree } from '../services/navigationService';
-import { getProducts } from '../services/productService'; // Added getProducts
-import { imageHelper } from '../utils/imageHelper'; // Added imageHelper
 import { useAuth } from '../context/AuthContext';
 import SearchModal from './SearchModal';
 
@@ -174,8 +174,16 @@ const Header = ({
                     {/* RIGHT: User, Wishlist, Cart */}
                     <div className="flex items-center justify-end gap-4 flex-1">
                         {user ? (
-                            <Link to="/account" className={`hover:text-accent transition-colors ${textColorClass}`}>
-                                <User size={20} />
+                            <Link to="/account" className={`hover:text-accent transition-colors ${textColorClass} flex items-center`}>
+                                {user.profile_image ? (
+                                    <img
+                                        src={user.profile_image}
+                                        alt={user.name}
+                                        className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                                    />
+                                ) : (
+                                    <User size={20} />
+                                )}
                             </Link>
                         ) : (
                             <button
@@ -334,7 +342,7 @@ const Header = ({
                                                         <div className="w-20 h-20 mb-2 overflow-hidden rounded-md border border-gray-100 shadow-sm relative">
                                                             <div className="absolute inset-0 bg-gray-100 animate-pulse" />
                                                             <img
-                                                                src={sub.image}
+                                                                src={imageHelper(sub.image)}
                                                                 alt={sub.label}
                                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 relative z-10"
                                                                 onError={(e) => {

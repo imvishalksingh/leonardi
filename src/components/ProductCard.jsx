@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Eye, Heart } from 'lucide-react';
 import { imageHelper } from '../utils/imageHelper';
-import { useWishlist } from '../context/WishlistContext';
 import QuickViewModal from './QuickViewModal';
+import { useWishlist } from '../context/WishlistContext';
 
 const ProductCard = ({ product }) => {
     const { isInWishlist, toggleWishlist } = useWishlist();
@@ -11,8 +11,15 @@ const ProductCard = ({ product }) => {
 
     if (!product) return null;
 
-    // Mock colors if not present in product data
-    const colors = product.colors || ['Black', 'Blue', 'Gold'];
+    // Use color from API product or fallback
+    const colors = product.color
+        ? [{ name: product.color.name, code: product.color.code }]
+        : (product.colors || ['Black', 'Blue', 'Gold']).map(c => typeof c === 'string' ? { name: c, code: c.toLowerCase() } : c);
+
+    const price = typeof product.price === 'number' ? product.price : parseFloat(product.price) || 0;
+    const comparePrice = product.compare_at_price
+        ? (typeof product.compare_at_price === 'number' ? product.compare_at_price : parseFloat(product.compare_at_price))
+        : null;
 
     return (
         <>
@@ -60,7 +67,7 @@ const ProductCard = ({ product }) => {
                         </button>
                     </div>
 
-                    {product.compare_at_price && (
+                    {comparePrice && comparePrice > price && (
                         <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] uppercase font-bold px-2 py-1 tracking-wider">
                             Sale
                         </span>
@@ -73,9 +80,9 @@ const ProductCard = ({ product }) => {
                     </Link>
 
                     <div className="flex justify-center items-center space-x-2 mb-2">
-                        <span className="text-black font-semibold">₹{product.price.toFixed(2)}</span>
-                        {product.compare_at_price && (
-                            <span className="text-gray-400 text-sm line-through">₹{product.compare_at_price.toFixed(2)}</span>
+                        <span className="text-black font-semibold">₹{price.toFixed(2)}</span>
+                        {comparePrice && comparePrice > price && (
+                            <span className="text-gray-400 text-sm line-through">₹{comparePrice.toFixed(2)}</span>
                         )}
                     </div>
 
@@ -85,8 +92,8 @@ const ProductCard = ({ product }) => {
                             <div
                                 key={idx}
                                 className="w-3 h-3 rounded-full border border-gray-300"
-                                style={{ backgroundColor: color.toLowerCase() }}
-                                title={color}
+                                style={{ backgroundColor: color.code || color.name?.toLowerCase() || '#ccc' }}
+                                title={color.name || ''}
                             ></div>
                         ))}
                         {colors.length > 4 && <span className="text-xs text-gray-400">+</span>}

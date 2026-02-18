@@ -1,97 +1,77 @@
-// Mega Menu Data
-const NAVIGATION_TREE = [
+import { fetchCategoryData, slugify, clearCache as clearStoreCache } from './categoryStore';
+
+let cachedNavTree = null;
+
+/**
+ * Fallback navigation data used when the API is unreachable.
+ */
+const FALLBACK_NAVIGATION_TREE = [
     {
-        id: 'necktie',
-        label: 'Necktie',
-        path: '/collection/necktie',
+        id: 'necktie', label: 'Necktie', path: '/collection/necktie', image: null,
         subs: [
-            { id: 'zipper', label: 'Zipper', path: '/collection/zipper-tie', image: '/assets/hero-slide-1.png' },
-            { id: 'solid', label: 'Solid', path: '/collection/solid-tie', image: '/assets/hero-slide-2.png' },
-            { id: 'silk', label: 'Silk', path: '/collection/silk-tie', image: '/assets/hero-slide-3.png' },
-            { id: 'printed', label: 'Printed', path: '/collection/printed-tie', image: '/assets/hero-slide-4.png' }
+            { id: 'zipper-necktie', label: 'Zipper Necktie', path: '/collection/necktie/zipper-necktie', image: '/assets/hero-slide-1.png' },
+            { id: 'solid-necktie', label: 'Solid Necktie', path: '/collection/necktie/solid-necktie', image: '/assets/hero-slide-2.png' },
+            { id: 'silk-necktie', label: 'Silk Necktie', path: '/collection/necktie/silk-necktie', image: '/assets/hero-slide-3.png' },
         ]
     },
     {
-        id: 'bowtie',
-        label: 'Bowtie',
-        path: '/collection/bowtie',
+        id: 'pocket-square', label: 'Pocket Square', path: '/collection/pocket-square', image: null,
         subs: [
-            { id: 'solid-bow', label: 'Solid', path: '/collection/solid-bowtie', image: '/assets/hero-slide-5.jpg' },
-            { id: 'open-bow', label: 'Open', path: '/collection/open-bowtie', image: '/assets/perfect-fit.png' },
-            { id: 'velvet-bow', label: 'Velvet', path: '/collection/velvet-bowtie', image: '/assets/hero-slide-1.png' }
+            { id: 'solid-pocket-square', label: 'Solid Pocket Square', path: '/collection/pocket-square/solid-pocket-square', image: '/assets/hero-slide-1.png' },
+            { id: 'silk-pocket-square', label: 'Silk Pocket Square', path: '/collection/pocket-square/silk-pocket-square', image: '/assets/hero-slide-2.png' },
         ]
     },
     {
-        id: 'pocket-square',
-        label: 'Pocket Square',
-        path: '/collection/pocket-square',
+        id: 'brooch', label: 'Brooch', path: '/collection/brooch', image: null,
         subs: [
-            { id: 'solid-ps', label: 'Solid', path: '/collection/solid-pocket-square', image: '/assets/hero-slide-2.png' },
-            { id: 'silk-ps', label: 'Silk', path: '/collection/silk-pocket-square', image: '/assets/hero-slide-3.png' },
-            { id: 'printed-ps', label: 'Printed Silk', path: '/collection/printed-silk-pocket-square', image: '/assets/hero-slide-4.png' }
+            { id: 'metal-brooch', label: 'Metal Brooch', path: '/collection/brooch/metal-brooch', image: '/assets/hero-slide-1.png' },
+            { id: 'chain-brooch', label: 'Chain Brooch', path: '/collection/brooch/chain-brooch', image: '/assets/hero-slide-2.png' },
         ]
     },
     {
-        id: 'cufflink',
-        label: 'Cufflink',
-        path: '/collection/cufflink',
-        subs: [
-            { id: 'cufflinks-sub', label: 'Cufflinks', path: '/collection/cufflinks' }
-        ]
+        id: 'belt', label: 'Belt', path: '/collection/belt', image: null,
+        subs: []
     },
-    {
-        id: 'cravat',
-        label: 'Cravat',
-        path: '/collection/cravat',
-        subs: [
-            { id: 'silk-cravat', label: 'Silk Cravat', path: '/collection/silk-cravat' }
-        ]
-    },
-    {
-        id: 'brooch',
-        label: 'Brooch',
-        path: '/collection/brooch',
-        subs: [
-            { id: 'metal-brooch', label: 'Metal Brooch', path: '/collection/metal-brooch' }
-        ]
-    },
-    {
-        id: 'tie-pin',
-        label: 'Tie Pin',
-        path: '/collection/tie-pin',
-        subs: [
-            { id: 'tie-pin-sub', label: 'Tie Pin', path: '/collection/tie-pin' }
-        ]
-    },
-    {
-        id: 'belt',
-        label: 'Belt',
-        path: '/collection/belt',
-        subs: [
-            { id: 'leather-belt', label: 'Leather Belt', path: '/collection/leather-belt' }
-        ]
-    },
-    {
-        id: 'suspender',
-        label: 'Suspender',
-        path: '/collection/suspender',
-        subs: [
-            { id: 'suspender-sub', label: 'Suspender', path: '/collection/suspender' }
-        ]
-    },
-    {
-        id: 'cummerbund',
-        label: 'Cummerbund',
-        path: '/collection/cummerbund',
-        subs: [
-            { id: 'cummerbund-single', label: 'Cummerbund', path: '/collection/cummerbund' },
-            { id: 'cummerbund-set', label: 'Cummerbund Set', path: '/collection/cummerbund-set' }
-        ]
-    }
 ];
 
+/**
+ * Fetches the category tree and transforms it for the sidebar.
+ * Uses the shared categoryStore — only ONE API call is ever made.
+ */
 export const getNavigationTree = async () => {
-    return new Promise((resolve) => {
-        setTimeout(() => resolve(NAVIGATION_TREE), 100);
+    if (cachedNavTree) return cachedNavTree;
+
+    const categories = await fetchCategoryData();
+
+    if (!categories || categories.length === 0) {
+        cachedNavTree = FALLBACK_NAVIGATION_TREE;
+        return cachedNavTree;
+    }
+
+    const navTree = categories.map(cat => {
+        const catSlug = slugify(cat.title || cat.name || '');
+        return {
+            id: catSlug,
+            label: cat.title || cat.name,
+            path: `/collection/${catSlug}`,
+            image: cat.image || null,
+            subs: (cat.subcategories || []).map(sub => {
+                const subSlug = slugify(sub.title || sub.name || '');
+                return {
+                    id: subSlug,
+                    label: sub.title || sub.name,
+                    path: `/collection/${catSlug}/${subSlug}`,
+                    image: sub.image || null,
+                };
+            }),
+        };
     });
+
+    cachedNavTree = navTree;
+    return navTree;
+};
+
+export const clearNavigationCache = () => {
+    cachedNavTree = null;
+    clearStoreCache();
 };

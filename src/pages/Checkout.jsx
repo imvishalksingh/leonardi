@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { Link, useLocation } from 'react-router-dom';
 import { imageHelper } from '../utils/imageHelper';
 import DiscountRedemption from '../components/DiscountRedemption';
@@ -7,6 +8,7 @@ import { ChevronDown, ChevronUp, ShoppingCart } from 'lucide-react';
 
 const Checkout = () => {
     const { cartItems, cartTotal, discountAmount, coinDiscount, finalTotal } = useCart();
+    const { user, register, generateOTP, verifyOTP } = useAuth(); // Import user and register
     const location = useLocation();
     const buyNowItem = location.state?.buyNowItem;
 
@@ -36,6 +38,28 @@ const Checkout = () => {
     const [loading, setLoading] = useState(false);
     const [isOrderSummaryOpen, setIsOrderSummaryOpen] = useState(true);
 
+    // Form Data State
+    const [formData, setFormData] = useState({
+        email: '',
+        firstName: '',
+        lastName: '',
+        address: '',
+        city: '',
+        postalCode: '',
+        phone: ''
+    });
+
+    // OTP States
+    const [showOtpModal, setShowOtpModal] = useState(false);
+    const [otp, setOtp] = useState('');
+    const [otpLoading, setOtpLoading] = useState(false);
+
+    // Handle Input Change
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
     if (effectiveCartItems.length === 0) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
@@ -45,10 +69,47 @@ const Checkout = () => {
         );
     }
 
-    const handleContinueToPayment = (e) => {
+    const handleContinueToPayment = async (e) => {
         e.preventDefault();
-        window.scrollTo(0, 0);
-        setStep(3);
+
+        if (user) {
+            // Already logged in, proceed
+            window.scrollTo(0, 0);
+            setStep(3);
+        } else {
+            // New user, trigger OTP flow
+            setLoading(true);
+            try {
+                await generateOTP(formData.phone);
+                setShowOtpModal(true);
+                alert(`OTP sent to ${formData.phone}`);
+            } catch (error) {
+                alert(error.message || 'Failed to send OTP. Please check the number.');
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
+    const handleVerifyOtp = async (e) => {
+        e.preventDefault();
+        setOtpLoading(true);
+
+        try {
+            await verifyOTP(formData.phone, otp);
+
+            // Allow updating local context with additional form details if needed
+            // But verifyOTP has already set the user from backend
+
+            setShowOtpModal(false);
+            window.scrollTo(0, 0);
+            setStep(3);
+            alert('Phone verified successfully!');
+        } catch (error) {
+            alert(error.message || 'Invalid OTP');
+        } finally {
+            setOtpLoading(false);
+        }
     };
 
     const handleCompleteOrder = () => {
@@ -113,7 +174,43 @@ const Checkout = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-12">
+        <div className="min-h-screen bg-gray-50 pb-12 relative">
+            {/* OTP Modal */}
+            {showOtpModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm animate-fade-in">
+                        <h3 className="text-lg font-bold mb-4 text-center">Verify Phone Number</h3>
+                        <p className="text-sm text-gray-600 text-center mb-4">
+                            We've sent a WhatsApp OTP to <span className="font-bold">{formData.phone}</span>
+                        </p>
+                        <form onSubmit={handleVerifyOtp} className="space-y-4">
+                            <input
+                                type="text"
+                                placeholder="Enter 6-digit OTP"
+                                className="w-full text-center text-2xl tracking-widest border-b-2 border-black outline-none p-2"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                maxLength={6}
+                                autoFocus
+                            />
+                            <button
+                                type="submit"
+                                disabled={otpLoading}
+                                className="w-full bg-green-600 text-white py-3 font-bold rounded hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
+                            >
+                                {otpLoading ? 'Verifying...' : 'Verify & Continue'}
+                            </button>
+                        </form>
+                        <button
+                            onClick={() => setShowOtpModal(false)}
+                            className="w-full mt-2 text-xs text-gray-500 hover:text-black underline"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Mobile Order Summary Toggle (Only visible in Info step or generally visible on mobile) */}
             {/* Request: "order summary only show on information step" on mobile */}
             {step === 1 && (
@@ -157,17 +254,73 @@ const Checkout = () => {
                         <div className="bg-white p-4 md:p-8 rounded-sm shadow-sm animate-fade-in">
                             <h2 className="text-lg font-bold mb-6 uppercase tracking-wider">Contact Information</h2>
                             <form onSubmit={handleContinueToPayment} className="space-y-4">
-                                <input required type="email" placeholder="Email address" className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm" />
+                                <input
+                                    required
+                                    type="email"
+                                    name="email"
+                                    placeholder="Email address"
+                                    value={formData.email}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm"
+                                />
                                 <div className="grid grid-cols-2 gap-4">
-                                    <input required type="text" placeholder="First name" className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm" />
-                                    <input required type="text" placeholder="Last name" className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm" />
+                                    <input
+                                        required
+                                        type="text"
+                                        name="firstName"
+                                        placeholder="First name"
+                                        value={formData.firstName}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm"
+                                    />
+                                    <input
+                                        required
+                                        type="text"
+                                        name="lastName"
+                                        placeholder="Last name"
+                                        value={formData.lastName}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm"
+                                    />
                                 </div>
-                                <input required type="text" placeholder="Address" className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm" />
+                                <input
+                                    required
+                                    type="text"
+                                    name="address"
+                                    placeholder="Address"
+                                    value={formData.address}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm"
+                                />
                                 <div className="grid grid-cols-2 gap-4">
-                                    <input required type="text" placeholder="City" className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm" />
-                                    <input required type="text" placeholder="Postal code" className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm" />
+                                    <input
+                                        required
+                                        type="text"
+                                        name="city"
+                                        placeholder="City"
+                                        value={formData.city}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm"
+                                    />
+                                    <input
+                                        required
+                                        type="text"
+                                        name="postalCode"
+                                        placeholder="Postal code"
+                                        value={formData.postalCode}
+                                        onChange={handleInputChange}
+                                        className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm"
+                                    />
                                 </div>
-                                <input required type="tel" placeholder="Phone" className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm" />
+                                <input
+                                    required
+                                    type="tel"
+                                    name="phone"
+                                    placeholder="Phone (WhatsApp enabled)"
+                                    value={formData.phone}
+                                    onChange={handleInputChange}
+                                    className="w-full p-3 border border-gray-200 outline-none focus:border-black text-sm"
+                                />
 
                                 {/* Buttons - Standard Layout */}
                                 <div className="mt-8 flex flex-col md:flex-row justify-end items-center gap-4">

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getProducts, getProductsByCategory } from '../services/productService';
+import { getProducts, getProductsByCategory, getProductsByFlag, getCategories } from '../services/productService';
 import ProductCard from '../components/ProductCard';
 import { Link, useParams } from 'react-router-dom';
 import { imageHelper } from '../utils/imageHelper';
@@ -10,10 +10,11 @@ import { X, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import Footer from '../components/Footer';
 
 const Home = () => {
-    const { category } = useParams();
+    const { category, subcategory } = useParams();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('best_sellers');
+    const [tabProducts, setTabProducts] = useState({ best_sellers: [], on_sale: [], new_arrivals: [] });
 
     // Filter Logic State
     const [sortBy, setSortBy] = useState('featured');
@@ -33,6 +34,17 @@ const Home = () => {
     // Responsive Limit Logic for Featured Products
     const [limit, setLimit] = useState(8);
     const [isExpanded, setIsExpanded] = useState(false);
+
+    // Dynamic categories from API
+    const [apiCategories, setApiCategories] = useState([]);
+
+    // Dynamic filter options derived from products
+    const [filterOptions, setFilterOptions] = useState({
+        colors: [],
+        qualities: [],
+        sizes: [],
+        patterns: [],
+    });
 
     // Toggle Accordion Helper
     const toggleAccordion = (section) => {
@@ -54,13 +66,11 @@ const Home = () => {
 
     useEffect(() => {
         if (category && window.innerWidth < 1024) {
-            // Optional: Lock body scroll if needed, but the fixed height container should handle it.
-            // document.body.style.overflow = 'hidden'; 
+            // Optional: Lock body scroll if needed
         }
         if (isFilterOpen || isSortOpen) {
             document.body.style.overflow = 'hidden';
         } else {
-            // Restore based on context if needed, but for now just unset
             document.body.style.overflow = 'unset';
         }
         return () => {
@@ -68,10 +78,11 @@ const Home = () => {
         };
     }, [isFilterOpen, isSortOpen, category]);
 
+    // Fetch products
     useEffect(() => {
         setLoading(true);
         if (category) {
-            getProductsByCategory(category).then((data) => {
+            getProductsByCategory(category, subcategory || null).then((data) => {
                 setProducts(data);
                 setLoading(false);
             });
@@ -81,7 +92,48 @@ const Home = () => {
                 setLoading(false);
             });
         }
-    }, [category]);
+    }, [category, subcategory]);
+
+    // Fetch categories for "Shop By Category"
+    useEffect(() => {
+        getCategories().then(cats => {
+            setApiCategories(cats.map(c => {
+                const catSlug = (c.title || c.name || '')
+                    .toLowerCase().trim()
+                    .replace(/[^a-z0-9\s-]/g, '')
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-');
+                return {
+                    name: c.title || c.name,
+                    image: c.image || '',
+                    link: `/collection/${catSlug}`,
+                };
+            }));
+        });
+    }, []);
+
+    // Fetch tab products (best sellers, on sale, new arrivals)
+    useEffect(() => {
+        Promise.all([
+            getProductsByFlag('best_seller'),
+            getProductsByFlag('on_sale'),
+            getProductsByFlag('new_arrival'),
+        ]).then(([bestSellers, onSale, newArrivals]) => {
+            setTabProducts({ best_sellers: bestSellers, on_sale: onSale, new_arrivals: newArrivals });
+        });
+    }, []);
+
+    // Derive filter options from loaded products
+    useEffect(() => {
+        if (products.length === 0) return;
+
+        const colors = [...new Set(products.filter(p => p.color?.name).map(p => p.color.name))];
+        const qualities = [...new Set(products.filter(p => p.material).map(p => p.material))];
+        const sizes = [...new Set(products.filter(p => p.size).map(p => p.size))];
+        const patterns = [...new Set(products.filter(p => p.pattern).map(p => p.pattern))];
+
+        setFilterOptions({ colors, qualities, sizes, patterns });
+    }, [products]);
 
     // Derived Filtered Products
     const filteredProducts = products.filter(product => {
@@ -97,8 +149,8 @@ const Home = () => {
 
         // Color Filter
         if (selectedColor !== 'all') {
-            const colorMatch = product.name.toLowerCase().includes(selectedColor.toLowerCase()) ||
-                (product.slug && product.slug.includes(selectedColor.toLowerCase()));
+            const colorMatch = product.color?.name?.toLowerCase() === selectedColor.toLowerCase() ||
+                product.name.toLowerCase().includes(selectedColor.toLowerCase());
             if (!colorMatch) return false;
         }
 
@@ -124,14 +176,6 @@ const Home = () => {
         return 0; // Featured / Default
     });
 
-
-    const categories = [
-        { name: 'Brooch', image: 'cat-brooch.png', link: '/collection/brooch' },
-        { name: 'Belt', image: 'cat-belt.png', link: '/collection/belt' },
-        { name: 'Tie Pin', image: 'cat-tie-pin.png', link: '/collection/tie-pin' },
-        { name: 'Suspender', image: 'cat-suspender.png', link: '/collection/suspender' },
-    ];
-
     const renderProductGrid = (items = products) => (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {items.map(product => (
@@ -152,18 +196,22 @@ const Home = () => {
 
     // If viewing a specific collection
     if (category) {
+        const displayName = subcategory
+            ? subcategory.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+            : category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
         return (
             <div className="w-full max-w-[1800px] mx-auto lg:px-12 lg:py-8 h-[calc(100vh-64px)] lg:h-auto lg:min-h-screen flex flex-col lg:block">
                 <SEO
-                    title={`${category.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Collection`}
-                    description={`Shop the exclusive ${category.replace(/-/g, ' ')} collection at Leonardi. Premium accessories for the modern wardrobe.`}
+                    title={`${displayName} Collection`}
+                    description={`Shop the exclusive ${displayName} collection at Leonardi. Premium accessories for the modern wardrobe.`}
                 />
 
                 {/* Fixed Header Container for Mobile (Non-scrolling part) */}
                 <div className="flex-shrink-0 bg-white z-40 shadow-sm lg:static lg:bg-transparent lg:z-auto lg:shadow-none pb-4">
                     <div className="py-4 lg:mb-8 text-center bg-white px-4">
                         <h1 className="text-xl md:text-3xl font-serif font-bold uppercase tracking-widest mb-2">
-                            {category.replace('-', ' ')} Collection
+                            {displayName} Collection
                         </h1>
                         <div className="w-16 h-1 bg-accent mx-auto"></div>
                     </div>
@@ -186,7 +234,6 @@ const Home = () => {
                 </div>
 
                 <div className="flex flex-col lg:flex-row gap-8 relative flex-1 overflow-y-auto w-full lg:overflow-visible pb-8 lg:pb-0 px-4 lg:px-0 pt-8 lg:pt-0">
-                    {/* Mobile Sticky Filter/Sort Bar Removed from here */}
 
                     {/* Mobile Sort Bottom Sheet/Drawer */}
                     {isSortOpen && (
@@ -241,106 +288,108 @@ const Home = () => {
                             {/* Scrollable Content */}
                             <div className="flex-1 overflow-y-auto">
                                 {/* Color Accordion */}
-                                <div className="border-b border-gray-100">
-                                    <button
-                                        onClick={() => toggleAccordion('color')}
-                                        className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
-                                    >
-                                        Color
-                                        {openAccordion === 'color' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                    </button>
-                                    {openAccordion === 'color' && (
-                                        <div className="px-5 pb-5 grid grid-cols-2 gap-3 bg-gray-50/50">
-                                            {['all', 'Black', 'Blue', 'Green', 'Gold', 'Silver', 'Red', 'Pink', 'Brown'].map(color => (
-                                                <button
-                                                    key={color}
-                                                    onClick={() => setSelectedColor(color)}
-                                                    className={`flex items-center gap-3 px-3 py-2 text-xs font-bold uppercase rounded-md border transition-all ${selectedColor === color ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-700'}`}
-                                                >
-                                                    {color !== 'all' && (
-                                                        <span
-                                                            className="w-4 h-4 rounded-full border border-gray-200"
-                                                            style={{ backgroundColor: color.toLowerCase() }}
-                                                        ></span>
-                                                    )}
-                                                    {color}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                                {filterOptions.colors.length > 0 && (
+                                    <div className="border-b border-gray-100">
+                                        <button
+                                            onClick={() => toggleAccordion('color')}
+                                            className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
+                                        >
+                                            Color
+                                            {openAccordion === 'color' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                        </button>
+                                        {openAccordion === 'color' && (
+                                            <div className="px-5 pb-5 grid grid-cols-2 gap-3 bg-gray-50/50">
+                                                {['all', ...filterOptions.colors].map(color => (
+                                                    <button
+                                                        key={color}
+                                                        onClick={() => setSelectedColor(color)}
+                                                        className={`flex items-center gap-3 px-3 py-2 text-xs font-bold uppercase rounded-md border transition-all ${selectedColor === color ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-700'}`}
+                                                    >
+                                                        {color}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Quality Accordion */}
-                                <div className="border-b border-gray-100">
-                                    <button
-                                        onClick={() => toggleAccordion('quality')}
-                                        className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
-                                    >
-                                        Quality
-                                        {openAccordion === 'quality' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                    </button>
-                                    {openAccordion === 'quality' && (
-                                        <div className="px-5 pb-5 flex flex-wrap gap-2 bg-gray-50/50">
-                                            {['all', 'Wool', 'Cotton', 'Knitted', 'Woven Silk', 'Printed Silk', 'Printed Micro', 'Woven Micro', 'Woven Polyester'].map(quality => (
-                                                <button
-                                                    key={quality}
-                                                    onClick={() => setSelectedQuality(quality)}
-                                                    className={`px-3 py-2 text-xs font-medium rounded-md border transition-all ${selectedQuality === quality ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-600'}`}
-                                                >
-                                                    {quality === 'all' ? 'All' : quality}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                                {filterOptions.qualities.length > 0 && (
+                                    <div className="border-b border-gray-100">
+                                        <button
+                                            onClick={() => toggleAccordion('quality')}
+                                            className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
+                                        >
+                                            Quality
+                                            {openAccordion === 'quality' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                        </button>
+                                        {openAccordion === 'quality' && (
+                                            <div className="px-5 pb-5 flex flex-wrap gap-2 bg-gray-50/50">
+                                                {['all', ...filterOptions.qualities].map(quality => (
+                                                    <button
+                                                        key={quality}
+                                                        onClick={() => setSelectedQuality(quality)}
+                                                        className={`px-3 py-2 text-xs font-medium rounded-md border transition-all ${selectedQuality === quality ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-600'}`}
+                                                    >
+                                                        {quality === 'all' ? 'All' : quality}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Size Accordion */}
-                                <div className="border-b border-gray-100">
-                                    <button
-                                        onClick={() => toggleAccordion('size')}
-                                        className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
-                                    >
-                                        Size
-                                        {openAccordion === 'size' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                    </button>
-                                    {openAccordion === 'size' && (
-                                        <div className="px-5 pb-5 space-y-2 bg-gray-50/50">
-                                            {['all', 'Skinny ( 6cm - 6.5cm )', 'Regular ( 7cm - 8.5cm )', 'Broad ( 9cm Above )', 'Long Length (68inch )'].map(size => (
-                                                <button
-                                                    key={size}
-                                                    onClick={() => setSelectedSize(size)}
-                                                    className={`w-full text-left px-3 py-2 text-xs font-medium rounded-md border transition-all ${selectedSize === size ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-600'}`}
-                                                >
-                                                    {size === 'all' ? 'All Sizes' : size}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                                {filterOptions.sizes.length > 0 && (
+                                    <div className="border-b border-gray-100">
+                                        <button
+                                            onClick={() => toggleAccordion('size')}
+                                            className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
+                                        >
+                                            Size
+                                            {openAccordion === 'size' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                        </button>
+                                        {openAccordion === 'size' && (
+                                            <div className="px-5 pb-5 space-y-2 bg-gray-50/50">
+                                                {['all', ...filterOptions.sizes].map(size => (
+                                                    <button
+                                                        key={size}
+                                                        onClick={() => setSelectedSize(size)}
+                                                        className={`w-full text-left px-3 py-2 text-xs font-medium rounded-md border transition-all ${selectedSize === size ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-600'}`}
+                                                    >
+                                                        {size === 'all' ? 'All Sizes' : size}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Pattern Accordion */}
-                                <div className="border-b border-gray-100">
-                                    <button
-                                        onClick={() => toggleAccordion('pattern')}
-                                        className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
-                                    >
-                                        Pattern
-                                        {openAccordion === 'pattern' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                                    </button>
-                                    {openAccordion === 'pattern' && (
-                                        <div className="px-5 pb-5 flex flex-wrap gap-2 bg-gray-50/50">
-                                            {['all', 'Dots', 'Solids', 'Polkas', 'Checks', 'Anchor', 'Stripes', 'Florals', 'Novelty', 'Paisleys', 'Abstract', 'Animals', 'Geometrics'].map(pattern => (
-                                                <button
-                                                    key={pattern}
-                                                    onClick={() => setSelectedPattern(pattern)}
-                                                    className={`px-3 py-2 text-xs font-medium rounded-md border transition-all ${selectedPattern === pattern ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-600'}`}
-                                                >
-                                                    {pattern === 'all' ? 'All' : pattern}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
+                                {filterOptions.patterns.length > 0 && (
+                                    <div className="border-b border-gray-100">
+                                        <button
+                                            onClick={() => toggleAccordion('pattern')}
+                                            className="w-full flex items-center justify-between p-5 text-sm font-bold uppercase tracking-widest hover:bg-gray-50"
+                                        >
+                                            Pattern
+                                            {openAccordion === 'pattern' ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                        </button>
+                                        {openAccordion === 'pattern' && (
+                                            <div className="px-5 pb-5 flex flex-wrap gap-2 bg-gray-50/50">
+                                                {['all', ...filterOptions.patterns].map(pattern => (
+                                                    <button
+                                                        key={pattern}
+                                                        onClick={() => setSelectedPattern(pattern)}
+                                                        className={`px-3 py-2 text-xs font-medium rounded-md border transition-all ${selectedPattern === pattern ? 'bg-black text-white border-black' : 'bg-white border-gray-200 text-gray-600'}`}
+                                                    >
+                                                        {pattern === 'all' ? 'All' : pattern}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
 
                                 {/* Price Accordion */}
                                 <div className="border-b border-gray-100">
@@ -379,14 +428,9 @@ const Home = () => {
                         </div>
                     </div>
 
-                    {/* Desktop Filter Sidebar (UNCHANGED but hidden on mobile) */}
+                    {/* Desktop Filter Sidebar */}
                     <div className={`hidden lg:block lg:w-1/4`}>
                         <div className="sticky top-24 space-y-8 bg-white p-6 border border-gray-100 shadow-sm">
-                            <div className="flex justify-between items-center lg:hidden mb-4">
-                                <span className="font-bold text-lg">Filters</span>
-                                <button onClick={() => setIsFilterOpen(false)} className="text-gray-500">&times;</button>
-                            </div>
-
                             {/* Sort By */}
                             <div>
                                 <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">Sort By</h3>
@@ -449,99 +493,82 @@ const Home = () => {
                                 </div>
                             </div>
 
-                            {/* Color */}
-                            <div>
-                                <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">Color</h3>
-                                <div className="flex flex-wrap gap-2">
-                                    {['all', 'Black', 'Blue', 'Green', 'Gold', 'Silver', 'Red', 'Pink', 'Brown'].map(color => (
-                                        <button
-                                            key={color}
-                                            onClick={() => setSelectedColor(color)}
-                                            className={`w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${selectedColor === color ? 'border-black scale-110' : 'border-transparent ring-1 ring-gray-200'}`}
-                                            title={color}
-                                            style={color !== 'all' ? { backgroundColor: color.toLowerCase() } : {}}
-                                        >
-                                            {color === 'all' && <span className="text-[10px] font-bold">ALL</span>}
-                                        </button>
-                                    ))}
+                            {/* Color (dynamic) */}
+                            {filterOptions.colors.length > 0 && (
+                                <div>
+                                    <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">Color</h3>
+                                    <div className="space-y-2">
+                                        {['all', ...filterOptions.colors].map(color => (
+                                            <label key={color} className="flex items-center space-x-2 cursor-pointer group">
+                                                <div className={`w-4 h-4 border flex items-center justify-center ${selectedColor === color ? 'border-black bg-black' : 'border-gray-300'}`}>
+                                                    {selectedColor === color && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                                                </div>
+                                                <input type="radio" name="color" value={color} checked={selectedColor === color} onChange={() => setSelectedColor(color)} className="hidden" />
+                                                <span className="text-sm text-gray-600 group-hover:text-black capitalize">{color === 'all' ? 'All Colors' : color}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Quality Filter */}
-                            <div>
-                                <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">By Quality</h3>
-                                <div className="space-y-2">
-                                    {['all', 'Wool', 'Cotton', 'Knitted', 'Woven Silk', 'Printed Silk', 'Printed Micro', 'Woven Micro', 'Woven Polyester'].map(quality => (
-                                        <label key={quality} className="flex items-center space-x-2 cursor-pointer group">
-                                            <div className={`w-4 h-4 border flex items-center justify-center ${selectedQuality === quality ? 'border-black bg-black' : 'border-gray-300'}`}>
-                                                {selectedQuality === quality && <div className="w-2 h-2 bg-white rounded-full"></div>}
-                                            </div>
-                                            <input
-                                                type="radio"
-                                                name="quality"
-                                                value={quality}
-                                                checked={selectedQuality === quality}
-                                                onChange={() => setSelectedQuality(quality)}
-                                                className="hidden"
-                                            />
-                                            <span className="text-sm text-gray-600 group-hover:text-black capitalize">{quality === 'all' ? 'All Qualities' : quality}</span>
-                                        </label>
-                                    ))}
+                            {/* Quality Filter (dynamic) */}
+                            {filterOptions.qualities.length > 0 && (
+                                <div>
+                                    <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">By Quality</h3>
+                                    <div className="space-y-2">
+                                        {['all', ...filterOptions.qualities].map(quality => (
+                                            <label key={quality} className="flex items-center space-x-2 cursor-pointer group">
+                                                <div className={`w-4 h-4 border flex items-center justify-center ${selectedQuality === quality ? 'border-black bg-black' : 'border-gray-300'}`}>
+                                                    {selectedQuality === quality && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                                                </div>
+                                                <input type="radio" name="quality" value={quality} checked={selectedQuality === quality} onChange={() => setSelectedQuality(quality)} className="hidden" />
+                                                <span className="text-sm text-gray-600 group-hover:text-black capitalize">{quality === 'all' ? 'All Qualities' : quality}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Size Filter */}
-                            <div>
-                                <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">By Size</h3>
-                                <div className="space-y-2">
-                                    {['all', 'Skinny ( 6cm - 6.5cm )', 'Regular ( 7cm - 8.5cm )', 'Broad ( 9cm Above )', 'Long Length (68inch )'].map(size => (
-                                        <label key={size} className="flex items-center space-x-2 cursor-pointer group">
-                                            <div className={`w-4 h-4 border flex items-center justify-center ${selectedSize === size ? 'border-black bg-black' : 'border-gray-300'}`}>
-                                                {selectedSize === size && <div className="w-2 h-2 bg-white rounded-full"></div>}
-                                            </div>
-                                            <input
-                                                type="radio"
-                                                name="size"
-                                                value={size}
-                                                checked={selectedSize === size}
-                                                onChange={() => setSelectedSize(size)}
-                                                className="hidden"
-                                            />
-                                            <span className="text-sm text-gray-600 group-hover:text-black capitalize">{size === 'all' ? 'All Sizes' : size}</span>
-                                        </label>
-                                    ))}
+                            {/* Size Filter (dynamic) */}
+                            {filterOptions.sizes.length > 0 && (
+                                <div>
+                                    <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">By Size</h3>
+                                    <div className="space-y-2">
+                                        {['all', ...filterOptions.sizes].map(size => (
+                                            <label key={size} className="flex items-center space-x-2 cursor-pointer group">
+                                                <div className={`w-4 h-4 border flex items-center justify-center ${selectedSize === size ? 'border-black bg-black' : 'border-gray-300'}`}>
+                                                    {selectedSize === size && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                                                </div>
+                                                <input type="radio" name="size" value={size} checked={selectedSize === size} onChange={() => setSelectedSize(size)} className="hidden" />
+                                                <span className="text-sm text-gray-600 group-hover:text-black capitalize">{size === 'all' ? 'All Sizes' : size}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Pattern Filter */}
-                            <div>
-                                <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">By Pattern</h3>
-                                <div className="space-y-2">
-                                    {['all', 'Dots', 'Solids', 'Polkas', 'Checks', 'Anchor', 'Stripes', 'Florals', 'Novelty', 'Paisleys', 'Abstract', 'Animals', 'Geometrics'].map(pattern => (
-                                        <label key={pattern} className="flex items-center space-x-2 cursor-pointer group">
-                                            <div className={`w-4 h-4 border flex items-center justify-center ${selectedPattern === pattern ? 'border-black bg-black' : 'border-gray-300'}`}>
-                                                {selectedPattern === pattern && <div className="w-2 h-2 bg-white rounded-full"></div>}
-                                            </div>
-                                            <input
-                                                type="radio"
-                                                name="pattern"
-                                                value={pattern}
-                                                checked={selectedPattern === pattern}
-                                                onChange={() => setSelectedPattern(pattern)}
-                                                className="hidden"
-                                            />
-                                            <span className="text-sm text-gray-600 group-hover:text-black capitalize">{pattern === 'all' ? 'All Patterns' : pattern}</span>
-                                        </label>
-                                    ))}
+                            {/* Pattern Filter (dynamic) */}
+                            {filterOptions.patterns.length > 0 && (
+                                <div>
+                                    <h3 className="font-bold uppercase text-sm mb-3 tracking-wider border-b pb-2">By Pattern</h3>
+                                    <div className="space-y-2">
+                                        {['all', ...filterOptions.patterns].map(pattern => (
+                                            <label key={pattern} className="flex items-center space-x-2 cursor-pointer group">
+                                                <div className={`w-4 h-4 border flex items-center justify-center ${selectedPattern === pattern ? 'border-black bg-black' : 'border-gray-300'}`}>
+                                                    {selectedPattern === pattern && <div className="w-2 h-2 bg-white rounded-full"></div>}
+                                                </div>
+                                                <input type="radio" name="pattern" value={pattern} checked={selectedPattern === pattern} onChange={() => setSelectedPattern(pattern)} className="hidden" />
+                                                <span className="text-sm text-gray-600 group-hover:text-black capitalize">{pattern === 'all' ? 'All Patterns' : pattern}</span>
+                                            </label>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
 
                     {/* Product Grid Area */}
                     <div className="lg:w-3/4">
-                        {/* Mobile 'Filter & Sort' button helper removed as it's replaced by sticky bar */}
-
                         {loading ? (
                             <div className="flex justify-center items-center h-64">Loading...</div>
                         ) : filteredProducts.length > 0 ? (
@@ -591,26 +618,29 @@ const Home = () => {
                 <HeroCarousel />
             </section>
 
-            <section className="w-full max-w-[1800px] mx-auto px-4 lg:px-12">
-                <h2 className="text-xl font-bold text-center mb-8 uppercase tracking-widest">Shop By Category</h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    {categories.map((cat, idx) => (
-                        <Link key={idx} to={cat.link} className="group relative aspect-square overflow-hidden block bg-gray-100">
-                            <img
-                                src={imageHelper(cat.image)}
-                                alt={cat.name}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                            />
-                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
-                            <div className="absolute inset-0 flex items-end justify-center pb-6">
-                                <span className="bg-white text-black px-6 py-2 text-xs uppercase font-bold tracking-wider hover:bg-black hover:text-white transition-colors cursor-pointer">
-                                    {cat.name}
-                                </span>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
-            </section>
+            {/* Shop By Category — uses live API categories */}
+            {apiCategories.length > 0 && (
+                <section className="w-full max-w-[1800px] mx-auto px-4 lg:px-12">
+                    <h2 className="text-xl font-bold text-center mb-8 uppercase tracking-widest">Shop By Category</h2>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {apiCategories.slice(0, 8).map((cat, idx) => (
+                            <Link key={idx} to={cat.link} className="group relative aspect-square overflow-hidden block bg-gray-100">
+                                <img
+                                    src={imageHelper(cat.image)}
+                                    alt={cat.name}
+                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                />
+                                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
+                                <div className="absolute inset-0 flex items-end justify-center pb-6">
+                                    <span className="bg-white text-black px-6 py-2 text-xs uppercase font-bold tracking-wider hover:bg-black hover:text-white transition-colors cursor-pointer">
+                                        {cat.name}
+                                    </span>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                </section>
+            )}
 
             <section className="w-full max-w-[1800px] mx-auto px-4 lg:px-12">
                 <div className="flex justify-between items-center mb-8">
@@ -621,43 +651,9 @@ const Home = () => {
                     >
                         {isExpanded ? 'View Less' : 'View All'}
                     </button>
-                    {/* fallback link if needed: <Link to="/collection/all" ...>View All</Link> */}
                 </div>
                 {renderProductGrid(isExpanded ? products : products.slice(0, limit))}
             </section>
-
-            {/* <section className="bg-gray-50 py-12">
-                <div className="w-full max-w-[1800px] mx-auto px-4 lg:px-12 grid md:grid-cols-2 gap-10 items-center">
-                    <div className="aspect-[4/3] bg-gray-200 relative overflow-hidden">
-                        <img
-                            src={imageHelper('perfect-fit.png')}
-                            alt="The Perfect Fit"
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                    <div className="space-y-6">
-                        <h3 className="text-3xl font-serif">The Perfect Fit</h3>
-                        <p className="text-gray-600 leading-relaxed">
-                            Discover our range of premium accessories designed to elevate your style.
-                            From handcrafted belts to exquisite brooches, every piece tells a story.
-                        </p>
-
-                        <div className="space-y-2">
-                            <div className="flex justify-between text-xs font-bold uppercase">
-                                <span>Available: 15</span>
-                                <span>Sold: 45</span>
-                            </div>
-                            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-full bg-accent w-3/4"></div>
-                            </div>
-                        </div>
-
-                        <button className="border border-black px-8 py-3 uppercase text-xs tracking-widest hover:bg-black hover:text-white transition-colors">
-                            Shop Collection
-                        </button>
-                    </div>
-                </div>
-            </section> */}
 
             <section className="w-full max-w-[1800px] mx-auto px-4 lg:px-12">
                 <div className="flex justify-center space-x-8 mb-8 border-b border-gray-100">
@@ -670,20 +666,19 @@ const Home = () => {
                                 : 'border-transparent text-gray-400 hover:text-black'
                                 }`}
                         >
-                            {tab.replace('_', ' ')}
+                            {tab.replace(/_/g, ' ')}
                         </button>
                     ))}
                 </div>
 
                 <div className="transition-opacity duration-500 animate-fade-in relative group">
-                    {/* Active Tab Content with Slider */}
-                    {activeTab === 'best_sellers' && renderProductSlider(products)}
-
-                    {activeTab === 'on_sale' && (
-                        <div className="text-center py-10 text-gray-500">No items currently on sale.</div>
+                    {tabProducts[activeTab] && tabProducts[activeTab].length > 0 ? (
+                        renderProductSlider(tabProducts[activeTab])
+                    ) : (
+                        <div className="text-center py-10 text-gray-500">
+                            No items in this category yet.
+                        </div>
                     )}
-
-                    {activeTab === 'new_arrivals' && renderProductSlider(products.slice(0, 5))}
                 </div>
             </section>
         </div>

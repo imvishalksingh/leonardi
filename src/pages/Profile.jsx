@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { User, Package, Coins, LogOut, Camera, Upload } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { User, Package, Coins, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
@@ -7,15 +7,26 @@ const Profile = () => {
     const { user, logout } = useAuth();
     const [activeTab, setActiveTab] = useState('profile');
 
-    // Form State (Mock data based on image)
+    // Form State (Initialized from user context)
     const [formData, setFormData] = useState({
-        firstName: 'Vishal',
-        lastName: 'Kumar',
-        email: 'v.wish8531@gmail.com',
-        phone: '',
-        address: '',
-        userId: 'USR20260130022'
+        name: user?.name || '',
+        email: user?.email || '',
+        phone: user?.mobile || '',
+        address: user?.address || '',
+        userId: user?.user_id || 'N/A'
     });
+
+    useEffect(() => {
+        if (user) {
+            setFormData({
+                name: user.name || '',
+                email: user.email || '',
+                phone: user.mobile || '',
+                address: user.address || '',
+                userId: user.user_id || 'N/A'
+            });
+        }
+    }, [user]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -55,16 +66,16 @@ const Profile = () => {
                         {/* Profile Image */}
                         <div className="relative w-24 h-24 mx-auto mb-4">
                             <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
-                                {user?.photoURL ? (
-                                    <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                                {user?.profile_image ? (
+                                    <img src={user.profile_image} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
                                     <User size={40} className="text-gray-400" />
                                 )}
                             </div>
                         </div>
 
-                        <h3 className="text-lg font-bold text-gray-900">{formData.firstName} {formData.lastName}</h3>
-                        <p className="text-sm text-gray-500 mb-6">{formData.email}</p>
+                        <h3 className="text-lg font-bold text-gray-900">{formData.name || 'Guest User'}</h3>
+                        <p className="text-sm text-gray-500 mb-6">{formData.email || formData.phone}</p>
 
                         {/* Navigation Menu */}
                         <div className="space-y-1">
@@ -109,13 +120,16 @@ const Profile = () => {
 
                                 {/* Avatar Upload Section */}
                                 <div className="mb-8">
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Upload Avatar: <span className="text-red-500">*</span></label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">Upload Avatar:</label>
                                     <div className="flex items-start gap-6">
-                                        <div className="w-24 h-24 bg-white border border-gray-200 rounded-lg flex items-center justify-center p-2">
-                                            {/* Placeholder Logo from image */}
-                                            <div className="text-center">
-                                                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">LEONARDI</span>
-                                            </div>
+                                        <div className="w-24 h-24 bg-white border border-gray-200 rounded-lg flex items-center justify-center p-2 overflow-hidden">
+                                            {user?.profile_image ? (
+                                                <img src={user.profile_image} alt="Profile" className="w-full h-full object-cover rounded-md" />
+                                            ) : (
+                                                <div className="text-center">
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">LEONARDI</span>
+                                                </div>
+                                            )}
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-sm font-bold text-gray-900 mb-2">Upload File:</p>
@@ -140,56 +154,48 @@ const Profile = () => {
 
                                 {/* Form Grid */}
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* First Name */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">First Name <span className="text-red-500">*</span></label>
+                                    {/* Full Name */}
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                                         <input
                                             type="text"
-                                            name="firstName"
-                                            value={formData.firstName}
+                                            name="name"
+                                            value={formData.name}
                                             onChange={handleInputChange}
+                                            placeholder="Enter your name"
                                             className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-black transition-colors"
                                         />
                                     </div>
-                                    {/* Last Name */}
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Last Name <span className="text-red-500">*</span></label>
-                                        <input
-                                            type="text"
-                                            name="lastName"
-                                            value={formData.lastName}
-                                            onChange={handleInputChange}
-                                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-black transition-colors"
-                                        />
-                                    </div>
+
                                     {/* Phone Number */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number <span className="text-red-500">*</span></label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                                         <input
                                             type="tel"
                                             name="phone"
                                             placeholder="Phone number"
                                             value={formData.phone}
-                                            onChange={handleInputChange}
-                                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-black transition-colors placeholder:text-gray-300"
+                                            readOnly
+                                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none bg-gray-50 text-gray-500 cursor-not-allowed"
                                         />
+                                        <p className="text-[10px] text-gray-400 mt-1">Contact support to change number</p>
                                     </div>
                                     {/* Email Address */}
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address <span className="text-red-500">*</span></label>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                                         <input
                                             type="email"
                                             name="email"
                                             value={formData.email}
-                                            onChange={handleInputChange}
-                                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-black transition-colors"
+                                            readOnly={!!user.google_id || !!user.email} // If verified email exists or google login
+                                            className={`w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none ${user.email ? 'bg-gray-50' : 'bg-white focus:border-black'}`}
                                         />
                                     </div>
                                 </div>
 
                                 {/* Address */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Address <span className="text-red-500">*</span></label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
                                     <textarea
                                         name="address"
                                         placeholder="Enter your address"
@@ -203,7 +209,7 @@ const Profile = () => {
                                 {/* Save Button */}
                                 <div className="mt-8">
                                     <button className="bg-black text-white text-xs font-bold uppercase tracking-wider px-8 py-3 rounded-md hover:bg-gray-800 transition-colors shadow-lg">
-                                        Save Change
+                                        Save Changes
                                     </button>
                                 </div>
                             </div>
@@ -220,9 +226,10 @@ const Profile = () => {
 
                         {activeTab === 'coins' && (
                             <div className="text-center py-12">
-                                <Coins size={48} className="mx-auto text-yellow-400 mb-4" />
-                                <h3 className="text-lg font-bold text-gray-900">0 Leo Coins</h3>
-                                <p className="text-gray-500 text-sm">Earn coins with every purchase!</p>
+                                <Coins size={48} className="mx-auto text-yellow-500 mb-4" />
+                                <h3 className="text-2xl font-bold text-gray-900">{parseFloat(user.leo_coin || 0).toFixed(2)}</h3>
+                                <p className="text-gray-500 text-sm uppercase tracking-wider font-bold">Leo Coins</p>
+                                <p className="text-xs text-gray-400 mt-2">Earn coins with every purchase!</p>
                             </div>
                         )}
                     </div>

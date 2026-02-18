@@ -39,7 +39,7 @@ const Footer = () => {
                     <ul className="space-y-2 text-sm text-gray-400">
                         {informationLinks.map(page => (
                             <li key={page.id} className="hover:text-accent cursor-pointer">
-                                <Link to={`/pages/${page.id}`}>{page.title}</Link>
+                                <Link to={page.link || `/pages/${page.id}`}>{page.title}</Link>
                             </li>
                         ))}
                     </ul>
@@ -50,7 +50,7 @@ const Footer = () => {
                     <ul className="space-y-2 text-sm text-gray-400">
                         {customerServiceLinks.map(page => (
                             <li key={page.id} className="hover:text-accent cursor-pointer">
-                                <Link to={`/pages/${page.id}`}>{page.title}</Link>
+                                <Link to={page.link || `/pages/${page.id}`}>{page.title}</Link>
                             </li>
                         ))}
                     </ul>
@@ -78,7 +78,7 @@ const Footer = () => {
             <div className="w-full max-w-[1800px] mx-auto px-4 lg:px-12 mt-10 pt-6 border-t border-gray-800 text-center text-xs text-gray-500">
                 &copy; 2025 Leonardi. All Rights Reserved.
             </div>
-        </footer>
+        </footer >
     );
 };
 

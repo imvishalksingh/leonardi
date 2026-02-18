@@ -1,277 +1,224 @@
-import { imageHelper } from '../utils/imageHelper';
+import { fetchCategoryData, slugify, clearCache as clearStoreCache } from './categoryStore';
 
+let cachedProducts = null;
+let cachedCategories = null;
 
-const PRODUCTS = [
-    // NEW MOCK DATA FOR SIDEBAR CATEGORIES
+/**
+ * Fallback mock products used when the API is unreachable.
+ */
+const FALLBACK_PRODUCTS = [
     {
-        "id": 201,
-        "name": "Classic Silk Necktie",
-        "slug": "classic-silk-necktie",
-        "price": 895.00,
-        "category": "Necktie",
-        "stock": 100,
-        "images": ["hero-slide-1.png", "hero-slide-2.png", "hero-slide-2.png", "hero-slide-3.png"],
-        "description": "A classic silk necktie for every occasion.",
-        "item_type": "Necktie",
-        "reviews": { "rating": 4.5, "count": 28 },
-        "material": "Woven Silk",
-        "size": "Regular ( 7cm - 8.5cm )",
-        "pattern": "Stripes"
+        id: 201, name: 'Classic Silk Necktie', slug: 'classic-silk-necktie', price: 895.00, compare_at_price: 1200.00,
+        category: 'Necktie', categorySlug: 'necktie', stock: 100, images: ['hero-slide-1.png', 'hero-slide-2.png'],
+        description: 'A classic silk necktie for every occasion.', item_type: 'Necktie',
+        material: 'Woven Silk', size: '', pattern: 'Stripes',
+        color: { name: 'Navy Blue', code: '#1a237e' }, reviews: { rating: 4.5, count: 28 },
+        best_seller: 'active', on_sale: 'active', new_arrival: 'inactive',
+        occasion: 'Formal', material_care: 'Dry Clean Only', sku: 'NT-001',
+        dimensions: { length: '150cm', breadth: '8cm', height: '' }, subcategory: 'Silk Necktie', subcategorySlug: 'silk-necktie',
     },
     {
-        "id": 202,
-        "name": "Modern Zipper Tie",
-        "slug": "modern-zipper-tie",
-        "price": 995.00,
-        "category": "Zipper Tie",
-        "stock": 50,
-        "images": ["hero-slide-2.png", "hero-slide-3.png"],
-        "description": "Convenient zipper tie with modern design.",
-        "item_type": "Necktie",
-        "reviews": { "rating": 4.2, "count": 15 },
-        "material": "Woven Polyester",
-        "size": "Skinny ( 6cm - 6.5cm )",
-        "pattern": "Solids"
+        id: 202, name: 'Royal Paisley Tie', slug: 'royal-paisley-tie', price: 1045.00, compare_at_price: null,
+        category: 'Necktie', categorySlug: 'necktie', stock: 50, images: ['hero-slide-2.png', 'hero-slide-3.png'],
+        description: 'A sophisticated paisley pattern.', item_type: 'Necktie',
+        material: 'Microfiber', size: '', pattern: 'Paisley',
+        color: { name: 'Maroon', code: '#800000' }, reviews: { rating: 4.2, count: 15 },
+        best_seller: 'active', on_sale: 'inactive', new_arrival: 'active',
+        occasion: 'Wedding', material_care: 'Dry Clean Only', sku: 'NT-002',
+        dimensions: { length: '150cm', breadth: '8cm', height: '' }, subcategory: 'Printed Necktie', subcategorySlug: 'printed-necktie',
     },
     {
-        "id": 203,
-        "name": "Solid Red Necktie",
-        "slug": "solid-red-necktie",
-        "price": 795.00,
-        "category": "Solid Tie",
-        "stock": 80,
-        "images": ["hero-slide-3.png", "hero-slide-1.png"],
-        "description": "Bold solid red necktie.",
-        "item_type": "Necktie",
-        "reviews": { "rating": 4.8, "count": 40 },
-        "material": "Woven Micro",
-        "size": "Broad ( 9cm Above )",
-        "pattern": "Solids"
+        id: 203, name: 'Elegant Pocket Square', slug: 'elegant-pocket-square', price: 450.00, compare_at_price: 600.00,
+        category: 'Pocket Square', categorySlug: 'pocket-square', stock: 200, images: ['hero-slide-3.png', 'hero-slide-1.png'],
+        description: 'Complete your look with this elegant pocket square.', item_type: 'Pocket Square',
+        material: 'Silk', size: '', pattern: 'Solid',
+        color: { name: 'Burgundy', code: '#800020' }, reviews: { rating: 4.8, count: 42 },
+        best_seller: 'active', on_sale: 'active', new_arrival: 'inactive',
+        occasion: 'Formal', material_care: 'Hand Wash', sku: 'PS-001',
+        dimensions: { length: '33cm', breadth: '33cm', height: '' }, subcategory: 'Silk Pocket Square', subcategorySlug: 'silk-pocket-square',
     },
     {
-        "id": 204,
-        "name": "Black Velvet Bowtie",
-        "slug": "black-velvet-bowtie",
-        "price": 595.00,
-        "category": "Bowtie",
-        "stock": 40,
-        "images": ["hero-slide-5.jpg"],
-        "description": "Elegant black velvet bowtie.",
-        "item_type": "Bowtie",
-        "reviews": { "rating": 4.6, "count": 35 },
-        "material": "Velvet",
-        "size": "Regular",
-        "pattern": "Solids"
+        id: 204, name: 'Designer Lapel Pin', slug: 'designer-lapel-pin', price: 350.00, compare_at_price: null,
+        category: 'Brooch', categorySlug: 'brooch', stock: 150, images: ['hero-slide-1.png', 'hero-slide-3.png'],
+        description: 'A stunning lapel pin.', item_type: 'Brooch',
+        material: 'Metal Alloy', size: '', pattern: 'Geometric',
+        color: { name: 'Gold', code: '#FFD700' }, reviews: { rating: 4.6, count: 33 },
+        best_seller: 'inactive', on_sale: 'inactive', new_arrival: 'active',
+        occasion: 'Party', material_care: 'Wipe with cloth', sku: 'BR-001',
+        dimensions: { length: '5cm', breadth: '3cm', height: '' }, subcategory: 'Metal Brooch', subcategorySlug: 'metal-brooch',
     },
     {
-        "id": 205,
-        "name": "Solid Satin Bowtie",
-        "slug": "solid-satin-bowtie",
-        "price": 595.00,
-        "category": "Solid Bowtie",
-        "stock": 45,
-        "images": ["perfect-fit.png"],
-        "description": "Premium satin finish bowtie.",
-        "item_type": "Bowtie",
-        "reviews": { "rating": 4.7, "count": 22 },
-        "material": "Satin",
-        "size": "Regular",
-        "pattern": "Solids"
+        id: 205, name: 'Premium Leather Belt', slug: 'premium-leather-belt', price: 1250.00, compare_at_price: 1500.00,
+        category: 'Belt', categorySlug: 'belt', stock: 75, images: ['hero-slide-2.png', 'hero-slide-1.png'],
+        description: 'Premium leather belt.', item_type: 'Belt',
+        material: 'Genuine Leather', size: '', pattern: 'Plain',
+        color: { name: 'Black', code: '#000000' }, reviews: { rating: 4.7, count: 56 },
+        best_seller: 'active', on_sale: 'active', new_arrival: 'inactive',
+        occasion: 'Everyday', material_care: 'Leather conditioner', sku: 'BL-001',
+        dimensions: { length: '120cm', breadth: '3.5cm', height: '' }, subcategory: 'Leather Belt', subcategorySlug: 'leather-belt',
     },
-    {
-        "id": 206,
-        "name": "Paisley Silk Pocket Square",
-        "slug": "paisley-silk-pocket-square",
-        "price": 495.00,
-        "category": "Pocket Square",
-        "stock": 60,
-        "images": ["hero-slide-4.png"],
-        "description": "Intricate paisley pattern pocket square.",
-        "item_type": "Pocket Square",
-        "reviews": { "rating": 4.5, "count": 18 },
-        "material": "Printed Silk",
-        "size": "Regular",
-        "pattern": "Paisleys"
-    },
-    {
-        "id": 207,
-        "name": "Solid White Pocket Square",
-        "slug": "solid-white-pocket-square",
-        "price": 395.00,
-        "category": "Solid Pocket Square",
-        "stock": 100,
-        "images": ["hero-slide-1.png"],
-        "description": "Essential solid white pocket square.",
-        "item_type": "Pocket Square",
-        "reviews": { "rating": 4.9, "count": 150 },
-        "material": "Cotton",
-        "size": "Regular",
-        "pattern": "Solids"
-    },
-    {
-        "id": 208,
-        "name": "Gold Cufflink Set",
-        "slug": "gold-cufflink-set",
-        "price": 1295.00,
-        "category": "Cufflink",
-        "stock": 30,
-        "images": ["CUFFLINK-04.jpg"],
-        "description": "Luxurious gold cufflink set.",
-        "item_type": "Cufflink",
-        "reviews": { "rating": 4.8, "count": 42 },
-        "material": "Metal",
-        "size": "Regular",
-        "pattern": "Abstract"
-    },
-    {
-        "id": 209,
-        "name": "Silk Cravat",
-        "slug": "silk-cravat-pattern",
-        "price": 1495.00,
-        "category": "Cravat",
-        "stock": 20,
-        "images": ["hero-slide-2.png", "hero-slide-3.png"],
-        "description": "Traditional silk cravat.",
-        "item_type": "Cravat",
-        "reviews": { "rating": 4.4, "count": 10 },
-        "material": "Printed Silk",
-        "size": "Long Length (68inch )",
-        "pattern": "Paisleys"
-    },
-    // Adding more mock data to test filters
-    {
-        "id": 210,
-        "name": "Knitted Cotton Tie",
-        "slug": "knitted-cotton-tie",
-        "price": 650.00,
-        "category": "Necktie",
-        "stock": 25,
-        "images": ["hero-slide-1.png"],
-        "description": "Casual knitted cotton tie.",
-        "item_type": "Necktie",
-        "reviews": { "rating": 4.3, "count": 12 },
-        "material": "Knitted",
-        "size": "Skinny ( 6cm - 6.5cm )",
-        "pattern": "Solids"
-    },
-    {
-        "id": 211,
-        "name": "Polka Dot Silk Tie",
-        "slug": "polka-dot-silk-tie",
-        "price": 950.00,
-        "category": "Necktie",
-        "stock": 40,
-        "images": ["hero-slide-2.png"],
-        "description": "Classic polka dot pattern.",
-        "item_type": "Necktie",
-        "reviews": { "rating": 4.6, "count": 18 },
-        "material": "Printed Silk",
-        "size": "Regular ( 7cm - 8.5cm )",
-        "pattern": "Polkas"
-    },
-    {
-        "id": 212,
-        "name": "Abstract Printed Micro Tie",
-        "slug": "abstract-printed-micro-tie",
-        "price": 750.00,
-        "category": "Necktie",
-        "stock": 35,
-        "images": ["hero-slide-3.png"],
-        "description": "Modern abstract design.",
-        "item_type": "Necktie",
-        "reviews": { "rating": 4.4, "count": 22 },
-        "material": "Printed Micro",
-        "size": "Broad ( 9cm Above )",
-        "pattern": "Abstract"
-    },
-    {
-        "id": 213,
-        "name": "Checkered Wool Tie",
-        "slug": "checkered-wool-tie",
-        "price": 850.00,
-        "category": "Necktie",
-        "stock": 15,
-        "images": ["hero-slide-4.png"],
-        "description": "Warm wool tie for winter.",
-        "item_type": "Necktie",
-        "reviews": { "rating": 4.7, "count": 8 },
-        "material": "Wool",
-        "size": "Regular ( 7cm - 8.5cm )",
-        "pattern": "Checks"
-    },
-    {
-        "id": 214,
-        "name": "Floral Novelty Tie",
-        "slug": "floral-novelty-tie",
-        "price": 895.00,
-        "category": "Necktie",
-        "stock": 55,
-        "images": ["hero-slide-5.jpg"],
-        "description": "Fun floral novelty tie.",
-        "item_type": "Necktie",
-        "reviews": { "rating": 4.5, "count": 30 },
-        "material": "Woven Micro",
-        "size": "Regular ( 7cm - 8.5cm )",
-        "pattern": "Florals"
-    }
 ];
 
+const FALLBACK_CATEGORIES = [
+    { id: 1, title: 'Necktie', slug: 'necktie', image: 'hero-slide-1.png' },
+    { id: 2, title: 'Pocket Square', slug: 'pocket-square', image: 'hero-slide-2.png' },
+    { id: 3, title: 'Brooch', slug: 'brooch', image: 'hero-slide-3.png' },
+    { id: 4, title: 'Belt', slug: 'belt', image: 'hero-slide-1.png' },
+];
+
+/**
+ * Normalize a single API product into the shape the UI components expect.
+ */
+const normalizeProduct = (apiProduct, categoryTitle = '', subcategoryTitle = '') => {
+    const salePrice = parseFloat(apiProduct.sale_price) || 0;
+    const regularPrice = parseFloat(apiProduct.regular_price) || 0;
+
+    const images = [];
+    if (apiProduct.thumbnail_image) images.push(apiProduct.thumbnail_image);
+    if (Array.isArray(apiProduct.gallery_images)) {
+        apiProduct.gallery_images.forEach(img => {
+            if (img && !images.includes(img)) images.push(img);
+        });
+    }
+    if (images.length === 0) images.push('');
+
+    return {
+        id: apiProduct.id,
+        name: apiProduct.title || 'Untitled',
+        slug: slugify(apiProduct.title || ''),
+        price: salePrice,
+        compare_at_price: regularPrice > salePrice ? regularPrice : null,
+        category: categoryTitle,
+        categorySlug: slugify(categoryTitle),
+        stock: parseInt(apiProduct.qty, 10) || 0,
+        images,
+        description: apiProduct.description || '',
+        item_type: apiProduct.item_type || categoryTitle,
+        material: apiProduct.fabric?.fabric_name || '',
+        material_care: apiProduct.material_care || 'Dry Clean Only',
+        pattern: apiProduct.patterns || '',
+        size: apiProduct.general_sizes || apiProduct.number_sizes || '',
+        color: apiProduct.color ? {
+            name: apiProduct.color.color_name || '',
+            code: apiProduct.color.color_code || '',
+        } : null,
+        reviews: { rating: 4.5, count: 0 },
+        best_seller: apiProduct.best_seller || 'inactive',
+        on_sale: apiProduct.on_sale || 'inactive',
+        new_arrival: apiProduct.new_arrival || 'inactive',
+        occasion: apiProduct.occasion || '',
+        dimensions: {
+            length: apiProduct.item_length ? `${apiProduct.item_length} ${apiProduct.length_unit || ''}`.trim() : '',
+            breadth: apiProduct.item_width ? `${apiProduct.item_width} ${apiProduct.width_unit || ''}`.trim() : '',
+            height: apiProduct.item_height ? `${apiProduct.item_height} ${apiProduct.height_unit || ''}`.trim() : '',
+        },
+        sku: apiProduct.product_sku || '',
+        subcategory: subcategoryTitle,
+        subcategorySlug: slugify(subcategoryTitle),
+    };
+};
+
+/**
+ * Fetch all products via the shared categoryStore.
+ * Only ONE normalization pass runs regardless of how many callers.
+ */
+let pendingProductFetch = null;
+
+const fetchAllProducts = async () => {
+    if (cachedProducts) return { products: cachedProducts, categories: cachedCategories };
+    if (pendingProductFetch) return pendingProductFetch;
+
+    pendingProductFetch = (async () => {
+        const categories = await fetchCategoryData();
+
+        if (!categories || categories.length === 0) {
+            cachedProducts = FALLBACK_PRODUCTS;
+            cachedCategories = FALLBACK_CATEGORIES;
+            pendingProductFetch = null;
+            return { products: FALLBACK_PRODUCTS, categories: FALLBACK_CATEGORIES };
+        }
+
+        const allProducts = [];
+
+        categories.forEach(cat => {
+            const categoryTitle = cat.title || cat.name || '';
+
+            if (Array.isArray(cat.subcategories)) {
+                cat.subcategories.forEach(sub => {
+                    const subcategoryTitle = sub.title || sub.name || '';
+                    if (Array.isArray(sub.products)) {
+                        sub.products.forEach(p => {
+                            allProducts.push(normalizeProduct(p, categoryTitle, subcategoryTitle));
+                        });
+                    }
+                });
+            }
+
+            if (Array.isArray(cat.products)) {
+                cat.products.forEach(p => {
+                    allProducts.push(normalizeProduct(p, categoryTitle, ''));
+                });
+            }
+        });
+
+        cachedProducts = allProducts;
+        cachedCategories = categories;
+        pendingProductFetch = null;
+        return { products: allProducts, categories };
+    })();
+
+    return pendingProductFetch;
+};
+
 export const getProducts = async () => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve(PRODUCTS);
-        }, 500);
-    });
+    const { products } = await fetchAllProducts();
+    return products;
 };
 
 export const getProductBySlug = async (slug) => {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            const product = PRODUCTS.find(p => p.slug === slug);
-            if (product) resolve(product);
-            else reject(new Error("Product not found"));
-        }, 500);
-    });
+    const { products } = await fetchAllProducts();
+    return products.find(p => p.slug === slug) || null;
 };
 
-export const getProductsByCategory = async (categorySlug) => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            if (!categorySlug || categorySlug === 'all') {
-                resolve(PRODUCTS);
-                return;
-            }
-            // Normalize slug: replace hyphens with spaces for matching (e.g., 'tie-pin' -> 'tie pin' matches 'Tie Pin')
-            const normalizedSlug = categorySlug.replace(/-/g, ' ').toLowerCase();
+export const getProductsByCategory = async (categorySlug, subSlug = null) => {
+    const { products } = await fetchAllProducts();
 
-            const filtered = PRODUCTS.filter(p => p.category.toLowerCase() === normalizedSlug);
-            resolve(filtered);
-        }, 500);
-    });
+    if (subSlug) {
+        const matched = products.filter(p => p.subcategorySlug === subSlug);
+        console.log(`[productService] filter subcategory="${subSlug}" → ${matched.length} products`);
+        if (matched.length === 0) {
+            // Debug: show available subcategory slugs
+            const availSlugs = [...new Set(products.map(p => p.subcategorySlug))].filter(Boolean);
+            console.log('[productService] available subcategorySlugs:', availSlugs);
+        }
+        return matched;
+    }
+
+    const matched = products.filter(p => p.categorySlug === categorySlug);
+    console.log(`[productService] filter category="${categorySlug}" → ${matched.length} products`);
+    return matched;
 };
 
 export const getRelatedProducts = async (category, currentId) => {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            let related = PRODUCTS.filter(p => p.category === category && p.id !== currentId);
+    const { products } = await fetchAllProducts();
+    return products
+        .filter(p => p.category === category && p.id !== currentId)
+        .slice(0, 4);
+};
 
-            // Fallback if no related products found in category
-            if (related.length === 0) {
-                related = PRODUCTS.filter(p => p.id !== currentId);
-            }
+export const getProductsByFlag = async (flag) => {
+    const { products } = await fetchAllProducts();
+    return products.filter(p => p[flag] === 'active');
+};
 
-            // Ensure we have at least 4 items by repeating if necessary
-            let result = [...related];
-            while (result.length < 4 && result.length > 0) {
-                // Clone the items to avoid reference issues
-                const clones = result.slice(0, 4 - result.length).map((item, index) => ({
-                    ...item,
-                    id: `${item.id}-dup-${Date.now()}-${Math.floor(Math.random() * 10000)}-${index}` // Generate unique ID for duplicates with random component
-                }));
-                result = [...result, ...clones];
-            }
+export const getCategories = async () => {
+    const { categories } = await fetchAllProducts();
+    return categories;
+};
 
-            resolve(result.slice(0, 4));
-        }, 500);
-    });
+export const clearProductCache = () => {
+    cachedProducts = null;
+    cachedCategories = null;
+    pendingProductFetch = null;
+    clearStoreCache();
 };

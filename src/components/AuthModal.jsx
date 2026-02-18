@@ -1,25 +1,49 @@
 import React, { useState } from 'react';
 import { X } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { useAuth } from '../context/AuthContext';
 
 const AuthModal = ({ isOpen, onClose }) => {
-    const [mode, setMode] = useState('login'); // 'login' or 'register'
-    const { login } = useAuth();
+    const [step, setStep] = useState('mobile'); // 'mobile' or 'otp'
+    const [mobile, setMobile] = useState('');
+    const [otp, setOtp] = useState('');
+    const [loading, setLoading] = useState(false);
+    const { googleLogin, generateOTP, verifyOTP } = useAuth();
     const navigate = useNavigate();
+
+    // Removed local useGoogleLogin as it conflicts with context provided one
 
     if (!isOpen) return null;
 
-    const handleSubmit = (e) => {
+    const handleSendOTP = async (e) => {
         e.preventDefault();
-        // Mock authentication
-        const emailInput = e.target.querySelector('input[type="email"]');
-        const email = emailInput ? emailInput.value : 'user@example.com';
+        setLoading(true);
+        try {
+            await generateOTP(mobile);
+            setStep('otp');
+            toast.success('OTP sent successfully!');
+        } catch (error) {
+            // Error is already toasted in context, but we can catch here if needed
+            // toast.error(error.message || 'Failed to send OTP'); 
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        login(email);
-        alert(`Successfully ${mode === 'login' ? 'logged in' : 'registered'}!`);
-        onClose();
-        navigate('/profile');
+    const handleVerifyOTP = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        try {
+            await verifyOTP(mobile, otp);
+            // toast.success('Login successful!'); // Already toasted in context
+            onClose();
+            navigate('/account');
+        } catch (error) {
+            // Error is already toasted in context
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -35,47 +59,116 @@ const AuthModal = ({ isOpen, onClose }) => {
 
                 <div className="text-center mb-8">
                     <h2 className="text-2xl font-serif font-bold uppercase tracking-widest mb-2">
-                        {mode === 'login' ? 'Welcome Back' : 'Create Account'}
+                        {step === 'mobile' ? 'Welcome' : 'Verify OTP'}
                     </h2>
                     <p className="text-sm text-gray-500">
-                        {mode === 'login' ? 'Sign in to access your account' : 'Register to track orders and save details'}
+                        {step === 'mobile'
+                            ? 'Enter your mobile number to continue'
+                            : `Enter the OTP sent to ${mobile}`
+                        }
                     </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    {mode === 'register' && (
+                {/* Google Sign-In Button - Only show on mobile step */}
+                {step === 'mobile' && (
+                    <>
+                        <div className="mb-6 flex justify-center">
+                            {loading && !mobile ? (
+                                <div className="flex items-center gap-2 text-sm text-gray-500 py-3">
+                                    <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                                    </svg>
+                                    Signing in...
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => googleLogin && googleLogin()}
+                                    className="flex items-center justify-center gap-3 w-full border border-gray-300 bg-white p-3 text-sm font-medium hover:bg-gray-50 transition-colors shadow-sm"
+                                >
+                                    <svg className="w-5 h-5" viewBox="0 0 24 24">
+                                        <path
+                                            fill="#4285F4"
+                                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                        />
+                                        <path
+                                            fill="#34A853"
+                                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                        />
+                                        <path
+                                            fill="#FBBC05"
+                                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                        />
+                                        <path
+                                            fill="#EA4335"
+                                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                        />
+                                    </svg>
+                                    Continue with Google
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="relative mb-6">
+                            <div className="absolute inset-0 flex items-center">
+                                <div className="w-full border-t border-gray-200"></div>
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-white px-4 text-gray-400 tracking-widest">or</span>
+                            </div>
+                        </div>
+                    </>
+                )}
+
+                <form onSubmit={step === 'mobile' ? handleSendOTP : handleVerifyOTP} className="space-y-4">
+                    {step === 'mobile' ? (
                         <div>
-                            <label className="block text-xs font-bold uppercase mb-1">Full Name</label>
-                            <input type="text" className="w-full border border-gray-300 p-3 text-sm outline-none focus:border-black transition-colors" required />
+                            <label className="block text-xs font-bold uppercase mb-1">Mobile Number</label>
+                            <input
+                                type="tel"
+                                value={mobile}
+                                onChange={(e) => setMobile(e.target.value)}
+                                className="w-full border border-gray-300 p-3 text-sm outline-none focus:border-black transition-colors"
+                                placeholder="Enter 10-digit mobile number"
+                                pattern="[0-9]{10}"
+                                required
+                            />
+                        </div>
+                    ) : (
+                        <div>
+                            <label className="block text-xs font-bold uppercase mb-1">One-Time Password</label>
+                            <input
+                                type="text"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                className="w-full border border-gray-300 p-3 text-sm outline-none focus:border-black transition-colors"
+                                placeholder="Enter OTP"
+                                required
+                            />
                         </div>
                     )}
-                    <div>
-                        <label className="block text-xs font-bold uppercase mb-1">Email Address</label>
-                        <input type="email" className="w-full border border-gray-300 p-3 text-sm outline-none focus:border-black transition-colors" required />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-bold uppercase mb-1">Password</label>
-                        <input type="password" className="w-full border border-gray-300 p-3 text-sm outline-none focus:border-black transition-colors" required />
-                    </div>
 
-                    <button className="w-full bg-black text-white py-4 uppercase font-bold text-sm tracking-wider hover:bg-accent transition-colors mt-4">
-                        {mode === 'login' ? 'Sign In' : 'Register'}
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-black text-white py-4 uppercase font-bold text-sm tracking-wider hover:bg-accent transition-colors mt-4 disabled:bg-gray-400"
+                    >
+                        {loading
+                            ? 'Processing...'
+                            : (step === 'mobile' ? 'Send OTP' : 'Verify & Login')
+                        }
                     </button>
-                </form>
 
-                <div className="mt-6 text-center text-sm">
-                    {mode === 'login' ? (
-                        <p>
-                            Don't have an account?{' '}
-                            <button type="button" onClick={() => setMode('register')} className="font-bold underline">Create one</button>
-                        </p>
-                    ) : (
-                        <p>
-                            Already have an account?{' '}
-                            <button type="button" onClick={() => setMode('login')} className="font-bold underline">Sign in</button>
-                        </p>
+                    {step === 'otp' && (
+                        <button
+                            type="button"
+                            onClick={() => setStep('mobile')}
+                            className="w-full text-xs text-gray-500 underline mt-2 hover:text-black"
+                        >
+                            Change Mobile Number
+                        </button>
                     )}
-                </div>
+                </form>
             </div>
         </div>
     );

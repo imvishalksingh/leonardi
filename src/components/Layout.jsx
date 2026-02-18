@@ -3,13 +3,15 @@ import { useLocation } from 'react-router-dom';
 import Header from './Header';
 import Footer from './Footer';
 import BottomNav from './BottomNav';
-import WishlistDrawer from './WishlistDrawer'; // Moved from Header
-import AuthModal from './AuthModal'; // Moved from Header
+import WishlistDrawer from './WishlistDrawer';
+import AuthModal from './AuthModal';
+import { useAuth } from '../context/AuthContext';
 
 const Layout = ({ children }) => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isWishlistOpen, setIsWishlistOpen] = useState(false);
-    const [isAuthOpen, setIsAuthOpen] = useState(false);
+    // Removed local isAuthOpen state
+    const { isAuthModalOpen, setIsAuthModalOpen } = useAuth();
     const location = useLocation();
 
     // Check if current page is a collection page to hide global footer on mobile
@@ -22,8 +24,8 @@ const Layout = ({ children }) => {
                 setIsMobileMenuOpen={setIsMobileMenuOpen}
                 isWishlistOpen={isWishlistOpen}
                 setIsWishlistOpen={setIsWishlistOpen}
-                isAuthOpen={isAuthOpen}
-                setIsAuthOpen={setIsAuthOpen}
+                isAuthOpen={isAuthModalOpen}
+                setIsAuthOpen={setIsAuthModalOpen}
             />
 
             <main className="flex-grow">
@@ -38,11 +40,11 @@ const Layout = ({ children }) => {
             <BottomNav
                 onOpenMenu={() => setIsMobileMenuOpen(true)}
                 onOpenWishlist={() => setIsWishlistOpen(true)}
-                onOpenAuth={() => setIsAuthOpen(true)}
+                onOpenAuth={() => setIsAuthModalOpen(true)}
             />
 
             <WishlistDrawer isOpen={isWishlistOpen} onClose={() => setIsWishlistOpen(false)} />
-            <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+            <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
 
             {/* Floating WhatsApp Button */}
             <div className="hidden lg:flex fixed bottom-8 right-8 z-50 items-center gap-4 group">
