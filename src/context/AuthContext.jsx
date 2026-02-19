@@ -1,19 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../services/api'; // Use centralized api instance
 import { useGoogleLogin } from '@react-oauth/google';
 import toast from 'react-hot-toast';
-
-// ====================================================
-// 🔧 REPLACE THIS with your actual backend API URL
-// We use an empty string to leverage the Vite proxy (see vite.config.js)
-// This avoids CORS issues by treating requests as same-origin
-const API_BASE_URL = '';
-// ====================================================
-
-// Configure Axios
-axios.defaults.baseURL = API_BASE_URL;
-axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-axios.defaults.withCredentials = true; // IMPORTANT: To handle cookies/sessions
 
 const AuthContext = createContext();
 
@@ -28,10 +16,10 @@ export const AuthProvider = ({ children }) => {
     // Set token on axios instance globally whenever it changes
     useEffect(() => {
         if (token) {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
             localStorage.setItem('token', token);
         } else {
-            delete axios.defaults.headers.common['Authorization'];
+            delete api.defaults.headers.common['Authorization'];
             localStorage.removeItem('token');
         }
         setLoading(false); // Stop loading after token check
@@ -39,7 +27,7 @@ export const AuthProvider = ({ children }) => {
 
     // Helper to request CSRF cookie (Still good to have for sanctum)
     const csrf = async () => {
-        await axios.get('/sanctum/csrf-cookie');
+        await api.get('/sanctum/csrf-cookie');
     };
 
     const checkUserLoggedIn = async () => {
@@ -49,7 +37,7 @@ export const AuthProvider = ({ children }) => {
         }
         try {
             // Use profile API for full details (including image URL logic)
-            const response = await axios.get('/api/profile/get');
+            const response = await api.get('/api/profile/get');
             if (response.data.success) {
                 setUser(response.data.user);
             }
@@ -81,7 +69,7 @@ export const AuthProvider = ({ children }) => {
                     'Content-Type': 'multipart/form-data',
                 },
             };
-            const response = await axios.post('/api/profile/update', formData, config);
+            const response = await api.post('/api/profile/update', formData, config);
 
             if (response.data.success) {
                 setUser(response.data.user);
@@ -104,7 +92,7 @@ export const AuthProvider = ({ children }) => {
     const generateOTP = async (mobile) => {
         try {
             await csrf();
-            const response = await axios.post('/api/login/generate-otp', { mobile });
+            const response = await api.post('/api/login/generate-otp', { mobile });
             const data = response.data;
 
             if (!data.success) {
@@ -132,7 +120,7 @@ export const AuthProvider = ({ children }) => {
     const verifyOTP = async (mobile, otp) => {
         try {
             await csrf();
-            const response = await axios.post('/api/login/verify-otp', { mobile, otp });
+            const response = await api.post('/api/login/verify-otp', { mobile, otp });
             // Backend returns: { success: true, token: "...", user: {...} }
             if (response.data && response.data.token) {
                 setToken(response.data.token);
@@ -161,7 +149,7 @@ export const AuthProvider = ({ children }) => {
             try {
                 console.log("Google Auth Code Received:", codeResponse);
                 await csrf();
-                const response = await axios.post('/api/login/google', {
+                const response = await api.post('/api/login/google', {
                     code: codeResponse.code,
                 });
 
@@ -184,7 +172,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = async () => {
         try {
-            await axios.post('/api/logout');
+            await api.post('/api/logout');
         } catch (error) {
             console.error('Logout failed:', error);
         } finally {
