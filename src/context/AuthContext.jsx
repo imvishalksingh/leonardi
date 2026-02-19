@@ -17,7 +17,7 @@ const API_BASE_URL = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL ||
 // Configure Axios
 axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-axios.defaults.withCredentials = true; // IMPORTANT: To handle cookies/sessions
+axios.defaults.withCredentials = false; // CHANGED: Set to false to avoid CORS wildcard error since we use Tokens
 
 const AuthContext = createContext();
 
