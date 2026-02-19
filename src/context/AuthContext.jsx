@@ -7,7 +7,11 @@ import toast from 'react-hot-toast';
 // 🔧 REPLACE THIS with your actual backend API URL
 // We use an empty string to leverage the Vite proxy (see vite.config.js)
 // This avoids CORS issues by treating requests as same-origin
-const API_BASE_URL = '';
+// ====================================================
+// 🔧 REPLACE THIS with your actual backend API URL
+// We use the environment variable for production
+// For development, we use an empty string to leverage the Vite proxy (which handles CORS by changing origin)
+const API_BASE_URL = import.meta.env.DEV ? '' : (import.meta.env.VITE_API_URL || '');
 // ====================================================
 
 // Configure Axios
@@ -38,9 +42,9 @@ export const AuthProvider = ({ children }) => {
     }, [token]);
 
     // Helper to request CSRF cookie (Still good to have for sanctum)
-    const csrf = async () => {
-        await axios.get('/sanctum/csrf-cookie');
-    };
+    // const csrf = async () => {
+    //     await axios.get('/sanctum/csrf-cookie');
+    // };
 
     const checkUserLoggedIn = async () => {
         if (!token) {
@@ -103,7 +107,7 @@ export const AuthProvider = ({ children }) => {
 
     const generateOTP = async (mobile) => {
         try {
-            await csrf();
+            // await csrf();
             const response = await axios.post('/api/login/generate-otp', { mobile });
             const data = response.data;
 
@@ -131,7 +135,7 @@ export const AuthProvider = ({ children }) => {
 
     const verifyOTP = async (mobile, otp) => {
         try {
-            await csrf();
+            // await csrf();
             const response = await axios.post('/api/login/verify-otp', { mobile, otp });
             // Backend returns: { success: true, token: "...", user: {...} }
             if (response.data && response.data.token) {
@@ -160,7 +164,7 @@ export const AuthProvider = ({ children }) => {
         onSuccess: async (codeResponse) => {
             try {
                 console.log("Google Auth Code Received:", codeResponse);
-                await csrf();
+                // await csrf();
                 const response = await axios.post('/api/login/google', {
                     code: codeResponse.code,
                 });
