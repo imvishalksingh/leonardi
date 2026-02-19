@@ -47,7 +47,7 @@ const CartDrawer = () => {
                                 <div key={`${item.id}-${idx}`} className="flex gap-5 animate-slide-up group">
                                     <div className="w-24 aspect-[3/4] bg-gray-100 flex-shrink-0 relative overflow-hidden">
                                         <img
-                                            src={imageHelper(item.images[0])}
+                                            src={imageHelper(item.images?.[0] || item.image || '')}
                                             alt={item.name}
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                         />
@@ -91,7 +91,7 @@ const CartDrawer = () => {
                                                 </div>
                                             </div>
                                             <div className="font-bold text-sm">
-                                                ₹{(item.price * item.quantity).toFixed(2)}
+                                                ₹{((item.price || 0) * item.quantity).toFixed(2)}
                                             </div>
                                         </div>
                                     </div>

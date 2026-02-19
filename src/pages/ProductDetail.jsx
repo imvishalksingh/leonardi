@@ -157,10 +157,19 @@ const ProductDetail = () => {
                     <div className="flex flex-wrap items-center gap-4">
                         <div className="text-2xl font-bold">₹{price.toFixed(2)}</div>
                         {comparePrice && comparePrice > price && (
-                            <div className="text-gray-400 line-through">₹{comparePrice.toFixed(2)}</div>
+                            <>
+                                <div className="text-gray-400 line-through">₹{comparePrice.toFixed(2)}</div>
+                                <div className="border border-red-500 text-red-500 px-2 py-0.5 text-xs font-bold uppercase">
+                                    -{Math.round(((comparePrice - price) / comparePrice) * 100)}% OFF
+                                </div>
+                            </>
                         )}
+                        <div className="border border-[#C19A6B] text-[#C19A6B] px-2 py-0.5 text-xs font-bold uppercase flex items-center gap-1">
+                            <span>5% Leo Coin</span>
+                        </div>
+
                         {reviews.count > 0 && (
-                            <div className="flex items-center text-yellow-500 text-sm">
+                            <div className="flex items-center text-yellow-500 text-sm ml-auto lg:ml-0">
                                 <Star size={16} fill="currentColor" />
                                 <span className="ml-1 text-black font-medium">{reviews.rating} ({reviews.count} reviews)</span>
                             </div>
@@ -210,27 +219,30 @@ const ProductDetail = () => {
 
                         <div className="flex flex-col gap-4 pt-4">
                             {/* Row 1: Quantity + Add to Cart */}
+                            {/* Row 1: Quantity + Add to Cart */}
                             <div className="flex gap-4 w-full">
-                                <div className="flex border border-gray-300 w-1/2 items-center h-12 px-4 justify-between">
-                                    <span className="font-bold text-lg">{quantity}</span>
-                                    <div className="flex flex-col border-l border-gray-300 h-full">
-                                        <button
-                                            onClick={() => setQuantity(quantity + 1)}
-                                            className="px-2 h-6 flex items-center justify-center hover:bg-gray-50 border-b border-gray-300"
-                                        >
-                                            <ChevronUp size={14} />
-                                        </button>
-                                        <button
-                                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="px-2 h-6 flex items-center justify-center hover:bg-gray-50"
-                                        >
-                                            <ChevronDown size={14} />
-                                        </button>
+                                {/* Quantity Selector - Horizontal */}
+                                <div className="flex items-center border border-gray-300 h-12 w-1/3">
+                                    <button
+                                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                                        className="w-10 h-full flex items-center justify-center hover:bg-gray-50 text-gray-600 transition-colors"
+                                    >
+                                        <span className="text-xl font-medium">-</span>
+                                    </button>
+                                    <div className="flex-1 h-full flex items-center justify-center border-l border-r border-gray-300">
+                                        <span className="font-bold text-lg">{quantity}</span>
                                     </div>
+                                    <button
+                                        onClick={() => setQuantity(quantity + 1)}
+                                        className="w-10 h-full flex items-center justify-center hover:bg-gray-50 text-gray-600 transition-colors"
+                                    >
+                                        <span className="text-xl font-medium">+</span>
+                                    </button>
                                 </div>
+
                                 <button
                                     onClick={() => handleAddToCart(false)}
-                                    className="w-1/2 bg-black text-white uppercase font-bold tracking-wider hover:bg-gray-800 transition-colors h-12 flex items-center justify-center rounded-sm text-sm"
+                                    className="flex-1 bg-black text-white uppercase font-bold tracking-wider hover:bg-gray-800 transition-colors h-12 flex items-center justify-center rounded-sm text-sm"
                                 >
                                     Add to Cart
                                 </button>

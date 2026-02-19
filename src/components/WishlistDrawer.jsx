@@ -42,7 +42,7 @@ const WishlistDrawer = ({ isOpen, onClose }) => {
                                 <div key={item.id} className="flex gap-4 animate-slide-up">
                                     <div className="w-24 aspect-[3/4] bg-gray-100 flex-shrink-0">
                                         <img
-                                            src={imageHelper(item.images[0])}
+                                            src={imageHelper(item.images?.[0] || item.image || '')}
                                             alt={item.name}
                                             className="w-full h-full object-cover"
                                         />
@@ -52,7 +52,7 @@ const WishlistDrawer = ({ isOpen, onClose }) => {
                                             <Link to={`/product/${item.slug}`} onClick={onClose} className="font-bold text-sm hover:text-accent line-clamp-2 mb-1">
                                                 {item.name}
                                             </Link>
-                                            <div className="text-sm font-semibold">₹{item.price.toFixed(2)}</div>
+                                            <div className="text-sm font-semibold">₹{(item.price || 0).toFixed(2)}</div>
                                         </div>
 
                                         <div className="flex gap-3 mt-3">

@@ -135,11 +135,18 @@ const Header = ({
                                                     className="flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors"
                                                     onClick={clearSearch}
                                                 >
-                                                    <img
-                                                        src={imageHelper(product.images[0])}
-                                                        alt={product.name}
-                                                        className="w-10 h-10 object-cover rounded-md"
-                                                    />
+                                                    <div className="w-10 h-10 flex-shrink-0 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden border border-gray-100 text-gray-400">
+                                                        {product.images[0] ? (
+                                                            <img
+                                                                src={imageHelper(product.images[0])}
+                                                                alt={product.name}
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => e.target.style.display = 'none'}
+                                                            />
+                                                        ) : (
+                                                            <ShoppingBag size={16} />
+                                                        )}
+                                                    </div>
                                                     <div className="flex-1">
                                                         <h4 className="text-sm font-medium text-gray-900 line-clamp-1">{product.name}</h4>
                                                         <span className="text-xs text-gray-500">₹{product.price}</span>
@@ -177,7 +184,7 @@ const Header = ({
                             <Link to="/account" className={`hover:text-accent transition-colors ${textColorClass} flex items-center`}>
                                 {user.profile_image ? (
                                     <img
-                                        src={user.profile_image}
+                                        src={imageHelper(user.profile_image)}
                                         alt={user.name}
                                         className="w-8 h-8 rounded-full object-cover border border-gray-200"
                                     />
@@ -255,11 +262,18 @@ const Header = ({
                                                     setIsSearchOpen(false);
                                                 }}
                                             >
-                                                <img
-                                                    src={imageHelper(product.images[0])}
-                                                    alt={product.name}
-                                                    className="w-12 h-12 object-cover rounded-md"
-                                                />
+                                                <div className="w-12 h-12 flex-shrink-0 bg-gray-100 rounded-md flex items-center justify-center overflow-hidden border border-gray-100 text-gray-400">
+                                                    {product.images[0] ? (
+                                                        <img
+                                                            src={imageHelper(product.images[0])}
+                                                            alt={product.name}
+                                                            className="w-full h-full object-cover"
+                                                            onError={(e) => e.target.style.display = 'none'}
+                                                        />
+                                                    ) : (
+                                                        <ShoppingBag size={20} />
+                                                    )}
+                                                </div>
                                                 <div className="flex-1">
                                                     <h4 className="text-sm font-medium text-gray-900 line-clamp-1">{product.name}</h4>
                                                     <span className="text-xs text-gray-500">₹{product.price}</span>

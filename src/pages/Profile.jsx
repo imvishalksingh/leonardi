@@ -2,10 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { User, Package, Coins, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { imageHelper } from '../utils/imageHelper';
 
 const Profile = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, updateProfile } = useAuth();
     const [activeTab, setActiveTab] = useState('profile');
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
 
     // Form State (Initialized from user context)
     const [formData, setFormData] = useState({
@@ -36,10 +40,40 @@ const Profile = () => {
         }));
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            const data = new FormData();
+            data.append('name', formData.name);
+            data.append('address', formData.address);
+            // Email/Mobile updates might be restricted by backend logic check
+            if (formData.email !== user.email) data.append('email', formData.email);
+            if (formData.phone !== user.mobile) data.append('mobile', formData.phone);
+
+            if (selectedFile) {
+                data.append('profile_image', selectedFile);
+            }
+
+            await updateProfile(data);
+            // Success toast is handled in context
+            setSelectedFile(null); // Reset file selection
+        } catch (error) {
+            // Error toast handled in context
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const handleLogout = () => {
         logout();
-        // Optional: Redirect to home or stay here to show "Sign In" message
-        // navigate('/'); 
     };
 
     if (!user) {
@@ -66,8 +100,10 @@ const Profile = () => {
                         {/* Profile Image */}
                         <div className="relative w-24 h-24 mx-auto mb-4">
                             <div className="w-full h-full rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-white shadow-sm">
-                                {user?.profile_image ? (
-                                    <img src={user.profile_image} alt="Profile" className="w-full h-full object-cover" />
+                                {previewUrl ? (
+                                    <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                ) : user?.profile_image ? (
+                                    <img src={imageHelper(user.profile_image)} alt="Profile" className="w-full h-full object-cover" />
                                 ) : (
                                     <User size={40} className="text-gray-400" />
                                 )}
@@ -123,8 +159,10 @@ const Profile = () => {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Upload Avatar:</label>
                                     <div className="flex items-start gap-6">
                                         <div className="w-24 h-24 bg-white border border-gray-200 rounded-lg flex items-center justify-center p-2 overflow-hidden">
-                                            {user?.profile_image ? (
-                                                <img src={user.profile_image} alt="Profile" className="w-full h-full object-cover rounded-md" />
+                                            {previewUrl ? (
+                                                <img src={previewUrl} alt="Preview" className="w-full h-full object-cover rounded-md" />
+                                            ) : user?.profile_image ? (
+                                                <img src={imageHelper(user.profile_image)} alt="Profile" className="w-full h-full object-cover rounded-md" />
                                             ) : (
                                                 <div className="text-center">
                                                     <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400">LEONARDI</span>
@@ -136,9 +174,11 @@ const Profile = () => {
                                             <div className="flex items-center gap-3">
                                                 <label className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold py-2 px-4 rounded-md transition-colors">
                                                     Choose File
-                                                    <input type="file" className="hidden" />
+                                                    <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} />
                                                 </label>
-                                                <span className="text-xs text-gray-400">No file chosen</span>
+                                                <span className="text-xs text-gray-400">
+                                                    {selectedFile ? selectedFile.name : 'No file chosen'}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -187,8 +227,9 @@ const Profile = () => {
                                             type="email"
                                             name="email"
                                             value={formData.email}
-                                            readOnly={!!user.google_id || !!user.email} // If verified email exists or google login
-                                            className={`w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none ${user.email ? 'bg-gray-50' : 'bg-white focus:border-black'}`}
+                                            // readOnly={!!user.google_id || !!user.email} // Allow editing if needed, backend handles logic
+                                            onChange={handleInputChange}
+                                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm outline-none focus:border-black transition-colors"
                                         />
                                     </div>
                                 </div>
@@ -208,8 +249,12 @@ const Profile = () => {
 
                                 {/* Save Button */}
                                 <div className="mt-8">
-                                    <button className="bg-black text-white text-xs font-bold uppercase tracking-wider px-8 py-3 rounded-md hover:bg-gray-800 transition-colors shadow-lg">
-                                        Save Changes
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={isSaving}
+                                        className="bg-black text-white text-xs font-bold uppercase tracking-wider px-8 py-3 rounded-md hover:bg-gray-800 transition-colors shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSaving ? 'Saving...' : 'Save Changes'}
                                     </button>
                                 </div>
                             </div>

@@ -35,8 +35,6 @@ const Home = () => {
     const [limit, setLimit] = useState(8);
     const [isExpanded, setIsExpanded] = useState(false);
 
-    // Dynamic categories from API
-    const [apiCategories, setApiCategories] = useState([]);
 
     // Dynamic filter options derived from products
     const [filterOptions, setFilterOptions] = useState({
@@ -94,23 +92,18 @@ const Home = () => {
         }
     }, [category, subcategory]);
 
-    // Fetch categories for "Shop By Category"
-    useEffect(() => {
-        getCategories().then(cats => {
-            setApiCategories(cats.map(c => {
-                const catSlug = (c.title || c.name || '')
-                    .toLowerCase().trim()
-                    .replace(/[^a-z0-9\s-]/g, '')
-                    .replace(/\s+/g, '-')
-                    .replace(/-+/g, '-');
-                return {
-                    name: c.title || c.name,
-                    image: c.image || '',
-                    link: `/collection/${catSlug}`,
-                };
-            }));
-        });
-    }, []);
+    // Static Categories
+    const STATIC_CATEGORIES = [
+        { name: 'Pocket Square', image: '/assets/pocket-square.webp', link: '/collection/pocket-square' },
+        { name: 'Necktie', image: '/assets/necktie.webp', link: '/collection/necktie' },
+        { name: 'Tie pin', image: '/assets/tie-pin.webp', link: '/collection/tie-pin' },
+        { name: 'Bowtie', image: '/assets/bowtie.webp', link: '/collection/bowtie' },
+        { name: 'Lapel pin', image: '/assets/lapel-pin.webp', link: '/collection/lapel-pin' },
+        { name: 'Brooch', image: '/assets/brooch.webp', link: '/collection/brooch' },
+        { name: 'Cufflink', image: '/assets/cufflink.webp', link: '/collection/cufflink' },
+        { name: 'Cravat', image: '/assets/cravat.webp', link: '/collection/cravat' },
+    ];
+
 
     // Fetch tab products (best sellers, on sale, new arrivals)
     useEffect(() => {
@@ -618,29 +611,28 @@ const Home = () => {
                 <HeroCarousel />
             </section>
 
-            {/* Shop By Category — uses live API categories */}
-            {apiCategories.length > 0 && (
-                <section className="w-full max-w-[1800px] mx-auto px-4 lg:px-12">
-                    <h2 className="text-xl font-bold text-center mb-8 uppercase tracking-widest">Shop By Category</h2>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {apiCategories.slice(0, 8).map((cat, idx) => (
-                            <Link key={idx} to={cat.link} className="group relative aspect-square overflow-hidden block bg-gray-100">
-                                <img
-                                    src={imageHelper(cat.image)}
-                                    alt={cat.name}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                />
-                                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
-                                <div className="absolute inset-0 flex items-end justify-center pb-6">
-                                    <span className="bg-white text-black px-6 py-2 text-xs uppercase font-bold tracking-wider hover:bg-black hover:text-white transition-colors cursor-pointer">
-                                        {cat.name}
-                                    </span>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </section>
-            )}
+            {/* Shop By Category — Static */}
+            <section className="w-full max-w-[1800px] mx-auto px-4 lg:px-12">
+                <h2 className="text-xl font-bold text-center mb-8 uppercase tracking-widest">Shop By Category</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {STATIC_CATEGORIES.map((cat, idx) => (
+                        <Link key={idx} to={cat.link} className="group relative aspect-square overflow-hidden block bg-gray-100">
+                            <img
+                                src={cat.image}
+                                alt={cat.name}
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors"></div>
+                            <div className="absolute inset-0 flex items-end justify-center pb-6">
+                                <span className="bg-white text-black px-6 py-2 text-xs uppercase font-bold tracking-wider hover:bg-black hover:text-white transition-colors cursor-pointer">
+                                    {cat.name}
+                                </span>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+            </section>
+
 
             <section className="w-full max-w-[1800px] mx-auto px-4 lg:px-12">
                 <div className="flex justify-between items-center mb-8">

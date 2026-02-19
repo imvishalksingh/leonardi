@@ -67,7 +67,7 @@ const ProductCard = ({ product }) => {
                         </button>
                     </div>
 
-                    {comparePrice && comparePrice > price && (
+                    {product.on_sale === 'active' && comparePrice && comparePrice > price && (
                         <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] uppercase font-bold px-2 py-1 tracking-wider">
                             Sale
                         </span>
@@ -80,7 +80,7 @@ const ProductCard = ({ product }) => {
                     </Link>
 
                     <div className="flex justify-center items-center space-x-2 mb-2">
-                        <span className="text-black font-semibold">₹{price.toFixed(2)}</span>
+                        <span className="text-black font-semibold">₹{(price || 0).toFixed(2)}</span>
                         {comparePrice && comparePrice > price && (
                             <span className="text-gray-400 text-sm line-through">₹{comparePrice.toFixed(2)}</span>
                         )}

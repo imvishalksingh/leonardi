@@ -13,7 +13,10 @@ export const imageHelper = (imagePath) => {
     if (
         imagePath.startsWith('products/') ||
         imagePath.startsWith('categories/') ||
-        imagePath.startsWith('subcategories/')
+        imagePath.startsWith('subcategories/') ||
+        imagePath.startsWith('profiles/') ||
+        imagePath.startsWith('users/') ||
+        imagePath.startsWith('avatars/')
     ) {
         return `${API_URL}/storage/${imagePath}`;
     }
