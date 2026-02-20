@@ -77,19 +77,21 @@ export const CartProvider = ({ children }) => {
             const response = await axios.get('/api/cart/get');
             if (response.data.success) {
                 // Backend returns: { success: true, data: [ { id, user_id, product_id, quantity, product: {...} } ] }
-                const items = response.data.data.map(item => {
-                    const productData = item.product || {};
-                    return {
-                        ...productData,
-                        id: productData.id || item.product_id, // Ensure ID exists
-                        name: productData.name || 'Unknown Product',
-                        price: productData.price || 0,
-                        images: productData.images || [],
-                        quantity: item.quantity,
-                        selectedSize: null,
-                        selectedColor: null
-                    };
-                });
+                const items = response.data.data
+                    .filter(item => item.product && item.product.id) // Filter out orphan items
+                    .map(item => {
+                        const productData = item.product;
+                        return {
+                            ...productData,
+                            id: productData.id,
+                            name: productData.name || productData.title || 'Unknown Product',
+                            price: parseFloat(productData.sale_price || productData.price || 0),
+                            images: productData.images || [],
+                            quantity: item.quantity,
+                            selectedSize: null,
+                            selectedColor: null
+                        };
+                    });
                 setCartItems(items);
             }
         } catch (error) {

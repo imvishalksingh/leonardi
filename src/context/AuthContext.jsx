@@ -56,10 +56,12 @@ export const AuthProvider = ({ children }) => {
             const response = await axios.get('/api/profile/get');
             if (response.data.success) {
                 const userData = response.data.user;
-                // Normalize profile_image if backend calls it 'avatar' or something else
-                if (!userData.profile_image && userData.avatar) {
-                    userData.profile_image = userData.avatar;
+                // Normalize profile_image from various possible backend fields
+                if (!userData.profile_image) {
+                    userData.profile_image = userData.avatar || userData.image || userData.profile_pic || userData.profile_photo_url || null;
                 }
+
+                console.log("User Profile Loaded:", userData); // Debug log
                 setUser(userData);
             }
         } catch (error) {
@@ -145,7 +147,13 @@ export const AuthProvider = ({ children }) => {
             // Backend returns: { success: true, token: "...", user: {...} }
             if (response.data && response.data.token) {
                 setToken(response.data.token);
-                setUser(response.data.user);
+
+                const userData = response.data.user;
+                if (!userData.profile_image) {
+                    userData.profile_image = userData.avatar || userData.image || userData.profile_pic || userData.profile_photo_url || null;
+                }
+                setUser(userData);
+
                 setIsAuthModalOpen(false);
                 toast.success('Login Successful!');
                 return response.data;
