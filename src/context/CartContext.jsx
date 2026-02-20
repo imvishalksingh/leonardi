@@ -13,7 +13,9 @@ export const CartProvider = ({ children }) => {
         if (typeof window !== 'undefined') {
             const saved = localStorage.getItem('cart');
             try {
-                return saved ? JSON.parse(saved) : [];
+                const parsed = saved ? JSON.parse(saved) : [];
+                // Filter out corrupted items (missing name or price)
+                return Array.isArray(parsed) ? parsed.filter(i => i && i.name && i.id) : [];
             } catch (e) {
                 console.error(e);
                 return [];
@@ -21,6 +23,7 @@ export const CartProvider = ({ children }) => {
         }
         return [];
     });
+
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [leoCoins, setLeoCoins] = useState(0);
     const { user } = useAuth();
@@ -102,6 +105,12 @@ export const CartProvider = ({ children }) => {
     }, [cartItems, user]);
 
     const addToCart = async (product, quantity = 1, options = {}) => {
+        if (!product || !product.id || !product.name) {
+            console.error("Invalid product passed to addToCart", product);
+            toast.error("Could not add item: Invalid product data");
+            return;
+        }
+
         if (user) {
             // Optimistic Update
             setCartItems(prev => {

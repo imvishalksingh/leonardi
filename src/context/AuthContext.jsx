@@ -55,7 +55,12 @@ export const AuthProvider = ({ children }) => {
             // Use profile API for full details (including image URL logic)
             const response = await axios.get('/api/profile/get');
             if (response.data.success) {
-                setUser(response.data.user);
+                const userData = response.data.user;
+                // Normalize profile_image if backend calls it 'avatar' or something else
+                if (!userData.profile_image && userData.avatar) {
+                    userData.profile_image = userData.avatar;
+                }
+                setUser(userData);
             }
         } catch (error) {
             console.error('Check User Error', error);
