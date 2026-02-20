@@ -22,9 +22,20 @@ const BottomNav = ({ onOpenMenu, onOpenWishlist, onOpenAuth }) => {
         }
     };
 
+    const handleHomeClick = (e) => {
+        if (isActive('/')) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
     return (
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-6 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-[40] flex justify-between items-center safe-area-bottom">
-            <Link to="/" className={`flex flex-col items-center gap-1 ${isActive('/') ? 'text-black' : 'text-gray-400'}`}>
+            <Link
+                to="/"
+                onClick={handleHomeClick}
+                className={`flex flex-col items-center gap-1 ${isActive('/') ? 'text-black' : 'text-gray-400'}`}
+            >
                 <Home size={20} className={isActive('/') ? 'fill-black' : ''} />
                 <span className="text-[10px] uppercase font-bold tracking-wider">Home</span>
             </Link>
