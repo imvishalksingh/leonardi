@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getBlogBySlug } from '../services/cmsService';
+import SEO from '../components/SEO';
 import { ChevronLeft, Calendar, User, Clock } from 'lucide-react';
 
 const BlogDetail = () => {
@@ -35,6 +36,12 @@ const BlogDetail = () => {
 
     return (
         <div className="container mx-auto px-4 py-12 min-h-[60vh] max-w-4xl">
+            <SEO
+                title={blog.meta_title || blog.title}
+                description={blog.meta_description || blog.short_description || `Read ${blog.title} on Leonardi Blog.`}
+                image={blog.image1}
+                type="article"
+            />
             <Link to="/blogs" className="inline-flex items-center text-sm font-bold uppercase tracking-widest text-gray-500 hover:text-black mb-8 transition-colors">
                 <ChevronLeft size={16} className="mr-2" /> Back to Blogs
             </Link>

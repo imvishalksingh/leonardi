@@ -1,15 +1,26 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Home, ShoppingBag, Heart, User } from 'lucide-react';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const BottomNav = ({ onOpenMenu, onOpenWishlist, onOpenAuth }) => {
     const location = useLocation();
+    const navigate = useNavigate();
     const { wishlistCount } = useWishlist();
-    const { cartCount, setIsCartOpen } = useCart(); // Use Cart Context
+    const { cartCount, setIsCartOpen } = useCart();
+    const { user } = useAuth(); // Get user state
 
     const isActive = (path) => location.pathname === path;
+
+    const handleAccountClick = () => {
+        if (user) {
+            navigate('/account');
+        } else {
+            onOpenAuth();
+        }
+    };
 
     return (
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-3 px-6 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] z-[40] flex justify-between items-center safe-area-bottom">
@@ -38,8 +49,11 @@ const BottomNav = ({ onOpenMenu, onOpenWishlist, onOpenAuth }) => {
                 <span className="text-[10px] uppercase font-bold tracking-wider">Wishlist</span>
             </button>
 
-            <button onClick={onOpenAuth} className="flex flex-col items-center gap-1 text-gray-400 focus:outline-none">
-                <User size={20} />
+            <button
+                onClick={handleAccountClick}
+                className={`flex flex-col items-center gap-1 focus:outline-none ${isActive('/account') ? 'text-black' : 'text-gray-400'}`}
+            >
+                <User size={20} className={isActive('/account') ? 'fill-black' : ''} />
                 <span className="text-[10px] uppercase font-bold tracking-wider">Account</span>
             </button>
         </div>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getFAQs } from '../services/cmsService';
+import SEO from '../components/SEO';
 import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const FAQs = () => {
@@ -22,6 +23,10 @@ const FAQs = () => {
 
     return (
         <div className="mx-auto px-5 py-10 max-w-[860px]" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
+            <SEO
+                title="Frequently Asked Questions"
+                description="Find answers to common questions about Leonardi's products, shipping, returns, and more."
+            />
             <div className="text-center mb-12">
                 <h1 className="text-3xl md:text-5xl font-bold text-[#111] mb-4" style={{ fontFamily: "Georgia, 'Times New Roman', serif" }}>
                     FAQs

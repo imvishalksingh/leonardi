@@ -59,6 +59,9 @@ const normalizeProduct = (apiProduct, categoryTitle = '', subcategoryTitle = '')
         sku: apiProduct.product_sku || '',
         subcategory: subcategoryTitle,
         subcategorySlug: slugify(subcategoryTitle),
+        meta_title: apiProduct.meta_title || '',
+        meta_keyword: apiProduct.meta_keyword || '',
+        meta_description: apiProduct.meta_description || '',
     };
 };
 

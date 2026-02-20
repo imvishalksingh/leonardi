@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getProducts, getProductsByCategory, getProductsByFlag, getCategories } from '../services/productService';
+import { slugify } from '../services/categoryStore';
 import ProductCard from '../components/ProductCard';
 import { Link, useParams } from 'react-router-dom';
 import { imageHelper } from '../utils/imageHelper';
@@ -12,6 +13,7 @@ import Footer from '../components/Footer';
 const Home = () => {
     const { category, subcategory } = useParams();
     const [products, setProducts] = useState([]);
+    const [activeCategoryData, setActiveCategoryData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('best_sellers');
     const [tabProducts, setTabProducts] = useState({ best_sellers: [], on_sale: [], new_arrivals: [] });
@@ -76,19 +78,42 @@ const Home = () => {
         };
     }, [isFilterOpen, isSortOpen, category]);
 
-    // Fetch products
+    // Fetch products and Category Data
     useEffect(() => {
         setLoading(true);
+
+        // 1. Fetch Products
         if (category) {
             getProductsByCategory(category, subcategory || null).then((data) => {
                 setProducts(data);
                 setLoading(false);
             });
+
+            // 2. Fetch Category Meta Data for SEO
+            getCategories().then(allCategories => {
+                if (!allCategories) return;
+
+                // Find top-level category
+                let matched = allCategories.find(c =>
+                    (c.slug === category) || (slugify(c.title || c.name || '') === category)
+                );
+
+                // If subcategory exists, drill down
+                if (subcategory && matched && matched.subcategories) {
+                    matched = matched.subcategories.find(s =>
+                        (s.slug === subcategory) || (slugify(s.title || s.name || '') === subcategory)
+                    );
+                }
+
+                setActiveCategoryData(matched);
+            });
+
         } else {
             getProducts().then((data) => {
                 setProducts(data);
                 setLoading(false);
             });
+            setActiveCategoryData(null);
         }
     }, [category, subcategory]);
 
@@ -196,8 +221,9 @@ const Home = () => {
         return (
             <div className="w-full max-w-[1800px] mx-auto lg:px-12 lg:py-8 h-[calc(100vh-64px)] lg:h-auto lg:min-h-screen flex flex-col lg:block">
                 <SEO
-                    title={`${displayName} Collection`}
-                    description={`Shop the exclusive ${displayName} collection at Leonardi. Premium accessories for the modern wardrobe.`}
+                    title={activeCategoryData?.seo_title || activeCategoryData?.title || `${displayName} Collection`}
+                    description={activeCategoryData?.seo_description || `Shop the exclusive ${displayName} collection at Leonardi. Premium accessories for the modern wardrobe.`}
+                    keywords={activeCategoryData?.seo_keyword || ''}
                 />
 
                 {/* Fixed Header Container for Mobile (Non-scrolling part) */}

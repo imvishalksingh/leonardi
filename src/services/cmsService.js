@@ -27,7 +27,9 @@ const fetchPages = async () => {
                 title: page.page_title,
                 heading: page.page_heading,
                 content: page.content,
-                section: getSectionForPage(page.slug)
+                section: getSectionForPage(page.slug),
+                meta_title: page.meta_title,
+                meta_description: page.meta_description
             }));
             return pagesCache;
         }

@@ -1,13 +1,14 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const SEO = ({ title, description, image, type = 'website' }) => {
+const SEO = ({ title, description, keywords, image, type = 'website' }) => {
     const siteName = 'Leonardi';
     const defaultDescription = 'Leonardi - Premium Fashion & Accessories. Shop the latest collection of Brooches, Neckties, and luxury items.';
     const defaultImage = '/assets/banner-mobile.jpg'; // Ensure you have a default OG image
 
     const metaTitle = title ? `${title} | ${siteName}` : siteName;
     const metaDescription = description || defaultDescription;
+    const metaKeywords = keywords || 'mens fashion, accessories, pocket squares, neckties, leonardi';
     const metaImage = image || defaultImage;
 
     return (
@@ -15,6 +16,7 @@ const SEO = ({ title, description, image, type = 'website' }) => {
             {/* Standard Metadata */}
             <title>{metaTitle}</title>
             <meta name="description" content={metaDescription} />
+            <meta name="keywords" content={metaKeywords} />
 
             {/* Open Graph / Facebook */}
             <meta property="og:type" content={type} />

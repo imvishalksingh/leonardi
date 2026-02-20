@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import SEO from '../components/SEO';
 import { getBlogs } from '../services/cmsService';
 
 const Blogs = () => {
@@ -17,6 +18,10 @@ const Blogs = () => {
 
     return (
         <div className="container mx-auto px-4 py-16 min-h-[60vh] max-w-[1800px] lg:px-12">
+            <SEO
+                title="Our Blog - Fashion & Style"
+                description="Read the latest articles on fashion trends, style tips, and Leonardi's latest collections."
+            />
             <div className="text-center mb-16">
                 <h1 className="text-3xl md:text-4xl font-serif font-bold uppercase tracking-widest mb-4">
                     Our Blog

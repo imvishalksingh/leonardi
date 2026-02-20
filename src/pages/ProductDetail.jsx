@@ -84,8 +84,9 @@ const ProductDetail = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <SEO
-                title={product.name}
-                description={`Buy ${product.name} - ₹${price}. High quality ${product.category} from Leonardi.`}
+                title={product.meta_title || product.name}
+                description={product.meta_description || `Buy ${product.name} - ₹${price}. High quality ${product.category} from Leonardi.`}
+                keywords={product.meta_keyword}
                 image={imageHelper(product.images[0])}
                 type="product"
             />
@@ -151,106 +152,166 @@ const ProductDetail = () => {
                 </div>
 
                 {/* Product Info */}
-                <div className="lg:col-span-7 space-y-8">
-                    <div>
-                        <h1 className="text-3xl font-serif text-gray-900 mb-2">{product.name}</h1>
-                        <div className="flex items-center gap-4">
-                            <span className="text-xl font-bold">₹{price.toFixed(2)}</span>
-                            {/* Rating */}
-                            <div className="flex items-center text-yellow-500 text-sm">
-                                <Star size={16} fill="currentColor" />
-                                <span className="ml-1 text-gray-500 font-medium">4.5 (28 reviews)</span>
-                            </div>
+                <div className="lg:col-span-7 space-y-6">
+                    <h1 className="text-2xl md:text-3xl font-serif leading-tight">{product.name}</h1>
+
+                    <div className="flex flex-wrap items-center gap-4">
+                        <div className="text-2xl font-bold">₹{price.toFixed(2)}</div>
+                        {comparePrice && comparePrice > price && (
+                            <>
+                                <div className="text-gray-400 line-through">₹{comparePrice.toFixed(2)}</div>
+                                <div className="border border-red-500 text-red-500 px-2 py-0.5 text-xs font-bold uppercase">
+                                    -{Math.round(((comparePrice - price) / comparePrice) * 100)}% OFF
+                                </div>
+                            </>
+                        )}
+                        <div className="border border-[#C19A6B] text-[#C19A6B] px-2 py-0.5 text-xs font-bold uppercase flex items-center gap-1">
+                            <span>5% Leo Coin</span>
                         </div>
+
+                        {reviews.count > 0 && (
+                            <div className="flex items-center text-yellow-500 text-sm ml-auto lg:ml-0">
+                                <Star size={16} fill="currentColor" />
+                                <span className="ml-1 text-black font-medium">{reviews.rating} ({reviews.count} reviews)</span>
+                            </div>
+                        )}
                     </div>
 
-                    {/* Color Selector */}
-                    {product.color && product.color.name && (
-                        <div>
-                            <p className="text-sm font-bold uppercase mb-3 text-gray-700">COLOR: {selectedColor || product.color.name}</p>
-                            <div className="flex gap-3">
-                                {/* Assuming product might have color options in future, but for now showing the single product color or a preset list if available */}
-                                {/* Mocking a few colors for visual match if data implies, otherwise just the product color */}
-                                <button
-                                    className={`w-8 h-8 rounded-full border border-gray-300 ring-2 ring-offset-2 ${selectedColor === product.color.name ? 'ring-black' : 'ring-transparent'}`}
-                                    style={{ backgroundColor: product.color.code || product.color.name?.toLowerCase() }}
-                                    onClick={() => setSelectedColor(product.color.name)}
-                                    title={product.color.name}
-                                />
-                                {/* Example mock colors to match screenshot aesthetic (Red, Blue, Black) if strictly requested, 
-                                    but sticking to data is safer. If product has variants, they should be mapped here. 
-                                    For now, displaying the current product color. */}
-                            </div>
-                        </div>
-                    )}
+                    <div className="bg-red-50 text-red-600 px-4 py-2 text-sm font-medium flex items-center space-x-2 animate-pulse rounded-md">
+                        <span>🔥</span>
+                        <span>Selling fast! 22 people have this in their carts.</span>
+                    </div>
 
-                    {/* Size Selector */}
-                    {product.size && (
-                        <div>
-                            <div className="flex items-center justify-between max-w-md mb-3">
-                                <p className="text-sm font-bold uppercase text-gray-700">SIZE: {selectedSize || product.size}</p>
-                                <button
-                                    onClick={() => setShowSizeGuide(true)}
-                                    className="text-gray-500 text-xs flex items-center hover:text-black transition-colors"
-                                >
-                                    <Ruler size={14} className="mr-1" /> Size Guide
-                                </button>
-                            </div>
-                            <div className="flex gap-3">
-                                {['S', 'M', 'L', 'XL'].map((size) => (
+                    <hr className="border-gray-100" />
+
+                    <div className="space-y-4">
+                        {/* Color - Updated UI */}
+                        {product.color && (
+                            <div className="mb-6">
+                                <span className="text-sm font-bold uppercase tracking-wider mb-3 block">
+                                    COLOR: {selectedColor || product.color.name}
+                                </span>
+                                <div className="flex flex-wrap gap-3">
                                     <button
-                                        key={size}
-                                        onClick={() => setSelectedSize(size)}
-                                        className={`w-10 h-10 flex items-center justify-center border text-sm font-medium transition-all
-                                            ${selectedSize === size
-                                                ? 'border-black bg-black text-white'
-                                                : 'border-gray-200 text-gray-600 hover:border-gray-400'}`}
-                                    >
-                                        {size}
-                                    </button>
-                                ))}
+                                        className={`w-8 h-8 rounded-full border border-gray-300 ring-2 ring-offset-2 ${selectedColor === product.color.name ? 'ring-black' : 'ring-transparent'}`}
+                                        style={{ backgroundColor: product.color.code || product.color.name?.toLowerCase() }}
+                                        title={product.color.name}
+                                        onClick={() => setSelectedColor(product.color.name)}
+                                    />
+                                    {/* Placeholder for other colors if they existed in a list */}
+                                    {/* <button className="w-8 h-8 rounded-full border border-gray-300 bg-red-600" /> */}
+                                    {/* <button className="w-8 h-8 rounded-full border border-gray-300 bg-blue-600" /> */}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                    {/* Quantity and Buttons */}
-                    <div className="pt-4 border-t border-gray-100">
-                        <div className="flex flex-col gap-5 max-w-xl">
-                            {/* Quantity Row */}
-                            <div className="flex items-center gap-4">
-                                <div className="border border-gray-300 rounded-sm flex items-center h-10 w-32">
+                        {/* Dynamic Size Selectors */}
+
+                        {/* 1. FIT TYPE */}
+                        {product.fit_types && product.fit_types.length > 0 && (
+                            <div className="mb-4 flex items-center">
+                                <span className="text-sm font-bold uppercase tracking-wider w-24 shrink-0">FIT:</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {product.fit_types.map((fit) => (
+                                        <button
+                                            key={fit}
+                                            className={`h-12 w-full min-w-[3rem] px-4 border text-sm font-medium transition-all flex items-center justify-center ${selectedSize === fit ? 'bg-black text-white border-black' : 'bg-white text-gray-700 border-gray-200 hover:border-black'}`}
+                                            onClick={() => setSelectedSize(fit)}
+                                        >
+                                            {fit}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 2. GENERAL SIZE (S, M, L...) */}
+                        {(product.general_sizes?.length > 0 || (product.size && !product.fit_types?.length && !product.number_sizes?.length)) && (
+                            <div className="mb-4 flex items-center">
+                                <div className="w-24 shrink-0 flex flex-col">
+                                    <span className="text-sm font-bold uppercase tracking-wider">SIZE:</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2 items-center">
+                                    {/* Handle both array and string cases */}
+                                    {(product.general_sizes?.length > 0
+                                        ? product.general_sizes
+                                        : (Array.isArray(product.size)
+                                            ? product.size
+                                            : (typeof product.size === 'string'
+                                                ? product.size.split(',').map(s => s.trim())
+                                                : []
+                                            )
+                                        )
+                                    ).map((size) => (
+                                        <button
+                                            key={size}
+                                            onClick={() => setSelectedSize(size)}
+                                            className={`w-12 h-12 border border-gray-200 flex items-center justify-center text-sm font-bold transition-all ${selectedSize === size ? 'bg-black text-white border-black' : 'bg-white text-gray-700 hover:border-black'}`}
+                                        >
+                                            {size}
+                                        </button>
+                                    ))}
+                                    <button className="text-xs text-gray-500 underline flex items-center hover:text-black ml-4" onClick={() => setShowSizeGuide(true)}>
+                                        <Ruler size={14} className="mr-1" /> Size Guide
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 3. NUMBER SIZE (32, 34...) */}
+                        {product.number_sizes && product.number_sizes.length > 0 && (
+                            <div className="mb-4 flex items-center">
+                                <span className="text-sm font-bold uppercase tracking-wider w-24 shrink-0">WAIST:</span>
+                                <div className="flex flex-wrap gap-2">
+                                    {product.number_sizes.map((numSize) => (
+                                        <button
+                                            key={numSize}
+                                            onClick={() => setSelectedSize(numSize)}
+                                            className={`w-12 h-12 border border-gray-200 flex items-center justify-center text-sm font-bold transition-all ${selectedSize === numSize ? 'bg-black text-white border-black' : 'bg-white text-gray-700 hover:border-black'}`}
+                                        >
+                                            {numSize}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+
+                        <div className="flex flex-col gap-6 pt-6 border-t border-gray-100">
+
+                            {/* Row 1: Quantity Selector - WIDER & BORDERED */}
+                            <div>
+                                <span className="text-sm font-bold uppercase tracking-wider mb-2 block">Quantity:</span>
+                                <div className="flex items-center border border-gray-300 h-14 w-full">
                                     <button
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="flex-1 h-full flex items-center justify-center hover:bg-gray-50 text-gray-600 text-lg"
+                                        className="w-14 h-full flex items-center justify-center hover:bg-gray-50 text-gray-600 transition-colors text-xl border-r border-gray-300 active:bg-gray-200"
                                     >
                                         -
                                     </button>
-                                    <div className="flex-1 h-full flex items-center justify-center font-bold text-gray-900">
+                                    <div className="flex-1 h-full flex items-center justify-center font-bold text-lg select-none">
                                         {quantity}
                                     </div>
                                     <button
                                         onClick={() => setQuantity(quantity + 1)}
-                                        className="flex-1 h-full flex items-center justify-center hover:bg-gray-50 text-gray-600 text-lg"
+                                        className="w-14 h-full flex items-center justify-center hover:bg-gray-50 text-gray-600 transition-colors text-xl border-l border-gray-300 active:bg-gray-200"
                                     >
                                         +
                                     </button>
                                 </div>
-                                {/* Green Check icon as seen in design */}
-                                <div className="text-green-600">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                        <polyline points="20 6 9 17 4 12"></polyline>
-                                    </svg>
-                                </div>
                             </div>
 
-                            {/* Action Buttons */}
-                            <div className="grid grid-cols-2 gap-4">
+                            {/* Row 2: Action Buttons (Inline) */}
+                            <div className="flex gap-4 w-full">
+                                {/* Add to Cart - Black */}
                                 <button
-                                    onClick={() => handleAddToCart(true)}
-                                    className="bg-black text-white h-12 text-sm font-bold uppercase tracking-widest hover:bg-gray-800 transition-colors shadow-sm"
+                                    onClick={() => handleAddToCart(false)}
+                                    className="flex-1 bg-black text-white uppercase font-bold tracking-widest hover:bg-gray-800 transition-colors h-14 flex items-center justify-center text-sm"
                                 >
                                     Add to Cart
                                 </button>
+
+                                {/* Buy Now - Gold */}
                                 <button
                                     onClick={() => {
                                         const buyNowItem = {
@@ -261,86 +322,105 @@ const ProductDetail = () => {
                                         };
                                         navigate('/checkout', { state: { buyNowItem } });
                                     }}
-                                    className="bg-[#C19A6B] text-white h-12 text-sm font-bold uppercase tracking-widest hover:bg-[#a6855b] transition-colors shadow-sm"
+                                    className="flex-1 bg-[#C19A6B] text-white border border-[#C19A6B] uppercase font-bold tracking-widest hover:bg-[#a6855b] transition-colors h-14 flex items-center justify-center text-sm"
                                 >
                                     Buy Now
                                 </button>
                             </div>
+
+                            {/* Row 3: Trust Badges - Larger Icons */}
+                            <div className="flex justify-between items-start pt-6 pb-2 gap-2">
+                                <div className="flex flex-col items-center text-center gap-2 w-1/5">
+                                    <img src="/assets/authority_1.webp" alt="Since 2003" className="w-16 h-16 object-contain" />
+                                    <span className="text-xs font-bold leading-tight uppercase text-gray-800">Since<br />2003</span>
+                                </div>
+                                <div className="flex flex-col items-center text-center gap-2 w-1/5">
+                                    <img src="/assets/authority_2.webp" alt="Secure Payment" className="w-16 h-16 object-contain" />
+                                    <span className="text-xs font-bold leading-tight uppercase text-gray-800">Secure<br />Payment</span>
+                                </div>
+                                <div className="flex flex-col items-center text-center gap-2 w-1/5">
+                                    <img src="/assets/authority_3.webp" alt="Free Delivery" className="w-16 h-16 object-contain" />
+                                    <span className="text-xs font-bold leading-tight uppercase text-gray-800">Free<br />Delivery</span>
+                                </div>
+                                <div className="flex flex-col items-center text-center gap-2 w-1/5">
+                                    <img src="/assets/authority_4.webp" alt="3-5 Days Delivery" className="w-16 h-16 object-contain" />
+                                    <span className="text-xs font-bold leading-tight uppercase text-gray-800">3-5 Days<br />Delivery</span>
+                                </div>
+                                <div className="flex flex-col items-center text-center gap-2 w-1/5">
+                                    <img src="/assets/authority_5.webp" alt="Easy Return" className="w-16 h-16 object-contain" />
+                                    <span className="text-xs font-bold leading-tight uppercase text-gray-800">Easy<br />Return</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Trust Badges - 5 Icons */}
-                    <div className="grid grid-cols-5 gap-2 max-w-xl py-6">
-                        <div className="flex flex-col items-center text-center">
-                            <img src="/assets/authority_1.webp" alt="Since 2003" className="h-12 w-auto object-contain mb-2" />
-                            <span className="text-[10px] uppercase font-bold text-gray-600 leading-tight">Since<br />2003</span>
-                        </div>
-                        <div className="flex flex-col items-center text-center">
-                            <img src="/assets/authority_2.webp" alt="Secure Payment" className="h-12 w-auto object-contain mb-2" />
-                            <span className="text-[10px] uppercase font-bold text-gray-600 leading-tight">Secure<br />Payment</span>
-                        </div>
-                        <div className="flex flex-col items-center text-center">
-                            <img src="/assets/authority_3.webp" alt="Free Delivery" className="h-12 w-auto object-contain mb-2" />
-                            <span className="text-[10px] uppercase font-bold text-gray-600 leading-tight">Free<br />Delivery</span>
-                        </div>
-                        <div className="flex flex-col items-center text-center">
-                            <img src="/assets/authority_4.webp" alt="3-5 Days Delivery" className="h-12 w-auto object-contain mb-2" />
-                            <span className="text-[10px] uppercase font-bold text-gray-600 leading-tight">3-5 Days<br />Delivery</span>
-                        </div>
-                        <div className="flex flex-col items-center text-center">
-                            <img src="/assets/authority_5.webp" alt="Easy Return" className="h-12 w-auto object-contain mb-2" />
-                            <span className="text-[10px] uppercase font-bold text-gray-600 leading-tight">Easy<br />Return</span>
-                        </div>
-                    </div>
 
-                    {/* Description Paragraph */}
-                    <div className="border-t border-gray-100 pt-6">
-                        <p className="text-gray-600 text-sm leading-7 mb-6">
-                            {product.description || `Luxurious fine wool stole in deep red with a contrasting silk border. Jacquard is the technique used in weaving this stole, giving it a luxurious and elegant feel. The fine wool blended with silk gives it an ultra soft & elegant feel.`}
-                        </p>
-
-                        <ul className="space-y-2 text-sm text-gray-700">
-                            {/* Bullet points mimicking the screenshot style */}
-                            {product.material && (
-                                <li className="flex items-start">
-                                    <span className="mr-2 text-black">•</span>
-                                    {product.material} {product.item_type ? `- ${product.item_type}` : ''}
-                                </li>
-                            )}
-                            <li className="flex items-start">
-                                <span className="mr-2 text-black">•</span>
-                                Self fringed
-                            </li>
-                            {product.dimensions && (
-                                <li className="flex items-start">
-                                    <span className="mr-2 text-black">•</span>
-                                    {product.dimensions.length} x {product.dimensions.breadth} cm
-                                </li>
-                            )}
-                            <li className="flex items-start">
-                                <span className="mr-2 text-black">•</span>
-                                Care : {product.material_care || 'Dry clean only, warm iron'}
-                            </li>
-                            <li className="flex items-start">
-                                <span className="mr-2 text-black">•</span>
-                                Packing : Each piece comes with our muslin cotton bag
-                            </li>
-                            <li className="flex items-start">
-                                <span className="mr-2 text-black">•</span>
-                                Made in India with Love ♥
-                            </li>
-                        </ul>
-                    </div>
                 </div>
             </div>
 
-            {/* This div was the tabs container - removing consistent with "Window view" screenshot implementation */}
-            <div className="hidden">
-                {/* Preserving hidden if we ever want to revert, effectively "deleting" from view */}
-                {/* ... old tabs code ... */}
+            <div className="max-w-4xl mx-auto mb-16">
+                <div className="flex justify-center mb-8 gap-4">
+                    {['description', 'specifications'].map(tab => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-8 py-2 text-sm font-bold capitalize rounded-full transition-all shadow-sm ${activeTab === tab
+                                ? 'bg-white text-black ring-1 ring-black'
+                                : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                }`}
+                        >
+                            {tab}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="bg-white border border-gray-100 rounded-xl p-8 shadow-sm">
+                    {activeTab === 'description' && (
+                        <div className="grid md:grid-cols-2 gap-12 text-left">
+                            <div>
+                                <h3 className="text-lg font-bold mb-4">About This Product</h3>
+                                <ul className="space-y-3 text-sm text-gray-700">
+                                    <li className="flex"><span className="font-bold w-32">Item Type:</span> {product.item_type || product.category}</li>
+                                    <li className="flex"><span className="font-bold w-32">Pattern:</span> {product.pattern || 'Solid'}</li>
+                                    <li className="flex"><span className="font-bold w-32">Material:</span> {product.material || 'N/A'}</li>
+                                    <li className="flex"><span className="font-bold w-32">Material Care:</span> {product.material_care || 'Dry Clean Only'}</li>
+                                    {product.occasion && (
+                                        <li className="flex"><span className="font-bold w-32">Occasion:</span> {product.occasion}</li>
+                                    )}
+                                    {product.color?.name && (
+                                        <li className="flex"><span className="font-bold w-32">Color:</span> {product.color.name}</li>
+                                    )}
+                                </ul>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold mb-4">Description</h3>
+                                <p className="text-sm text-gray-600 leading-relaxed max-w-xl whitespace-pre-line">
+                                    {product.description || `The ${product.name.toLowerCase()} gives you a sophisticated look within seconds. Designed to create a perfect appearance without any difficulty.`}
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'specifications' && (
+                        <div className="text-left max-w-2xl mx-auto">
+                            <h3 className="text-lg font-bold mb-6 border-b pb-2">Specifications</h3>
+                            <div className="space-y-4 text-sm">
+                                {Object.keys(specifications).length > 0 ? (
+                                    Object.entries(specifications).map(([key, value]) => (
+                                        <div key={key} className="grid grid-cols-3 pb-2 border-b border-gray-50">
+                                            <span className="font-bold">{key}</span>
+                                            <span className="col-span-2 text-gray-600">{value}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="text-gray-500 italic">No specifications available.</div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            {/* Related Products */}
             {relatedProducts.length > 0 && (
                 <div className="mt-16 border-t border-gray-100 pt-12">
                     <h2 className="text-2xl font-serif font-bold text-center mb-8">You May Also Like</h2>

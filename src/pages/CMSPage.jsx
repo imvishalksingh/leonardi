@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getPageBySlug } from '../services/cmsService';
+import SEO from '../components/SEO';
 
 const CMSPage = () => {
     const { slug } = useParams();
@@ -34,6 +35,10 @@ const CMSPage = () => {
 
     return (
         <div className="container mx-auto px-4 py-12 min-h-[60vh]">
+            <SEO
+                title={page.meta_title || page.heading || page.title}
+                description={page.meta_description || `Read about ${page.title} at Leonardi.`}
+            />
             <div className="max-w-3xl mx-auto">
                 <h1 className="text-3xl font-serif font-bold mb-8 uppercase tracking-wider text-center border-b pb-6">
                     {page.heading || page.title}
