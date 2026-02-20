@@ -182,15 +182,24 @@ const Header = ({
                     <div className="flex items-center justify-end gap-4 flex-1">
                         {user ? (
                             <Link to="/account" className={`hover:text-accent transition-colors ${textColorClass} flex items-center`}>
-                                {user.profile_image ? (
-                                    <img
-                                        src={imageHelper(user.profile_image)}
-                                        alt={user.name}
-                                        className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                                    />
-                                ) : (
-                                    <User size={20} />
-                                )}
+                                <div className="relative w-8 h-8 flex items-center justify-center">
+                                    {user.profile_image ? (
+                                        <>
+                                            <img
+                                                src={imageHelper(user.profile_image)}
+                                                alt={user.name}
+                                                className="w-full h-full rounded-full object-cover border border-gray-200"
+                                                onError={(e) => {
+                                                    e.target.style.display = 'none';
+                                                    e.target.nextSibling.style.display = 'block'; // Show fallback
+                                                }}
+                                            />
+                                            <User size={20} className="hidden absolute" />
+                                        </>
+                                    ) : (
+                                        <User size={20} />
+                                    )}
+                                </div>
                             </Link>
                         ) : (
                             <button

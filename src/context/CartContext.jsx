@@ -90,6 +90,11 @@ export const CartProvider = ({ children }) => {
                             }
                         }
 
+                        // Fallback to singular image if images array is empty
+                        if ((!images || images.length === 0) && productData.image) {
+                            images = [productData.image];
+                        }
+
                         return {
                             ...productData,
                             id: productData.id,
