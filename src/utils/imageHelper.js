@@ -3,8 +3,13 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 export const imageHelper = (imagePath) => {
     if (!imagePath) return '';
 
-    // Already a full URL — return as-is
+    // Already a full URL — return as-is, but check for "double URL" issue from backend
+    // e.g. "https://domain.com/storage/https://google.com/..."
     if (imagePath.startsWith('http')) {
+        const doubleUrlMatch = imagePath.match(/(https?:\/\/.*)(https?:\/\/.*)/);
+        if (doubleUrlMatch && doubleUrlMatch[2]) {
+            return doubleUrlMatch[2];
+        }
         return imagePath;
     }
 

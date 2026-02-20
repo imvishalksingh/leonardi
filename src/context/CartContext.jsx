@@ -81,7 +81,7 @@ export const CartProvider = ({ children }) => {
                     .filter(item => item.product && item.product.id) // Filter out orphan items
                     .map(item => {
                         const productData = item.product;
-                        let images = productData.images || [];
+                        let images = productData.gallery_images || productData.images || [];
                         if (typeof images === 'string') {
                             try {
                                 images = JSON.parse(images);
@@ -91,8 +91,10 @@ export const CartProvider = ({ children }) => {
                         }
 
                         // Fallback to singular image if images array is empty
-                        if ((!images || images.length === 0) && productData.image) {
-                            images = [productData.image];
+                        // API uses 'thumbnail_image' or 'image'
+                        if ((!images || images.length === 0)) {
+                            if (productData.thumbnail_image) images = [productData.thumbnail_image];
+                            else if (productData.image) images = [productData.image];
                         }
 
                         return {
