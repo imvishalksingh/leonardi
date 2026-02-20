@@ -20,10 +20,12 @@ export const imageHelper = (imagePath) => {
         imagePath.startsWith('profile_images/') ||
         imagePath.startsWith('storage/')
     ) {
+        // If it starts with storage/, just append API_URL (ensure no double slash)
         if (imagePath.startsWith('storage/')) {
-            return `${API_URL}/${imagePath}`;
+            return `${API_URL}/${imagePath}`.replace(/([^:]\/)\/+/g, "$1");
         }
-        return `${API_URL}/storage/${imagePath}`;
+        // Otherwise prepend /storage/
+        return `${API_URL}/storage/${imagePath}`.replace(/([^:]\/)\/+/g, "$1");
     }
 
     // Local public assets (legacy mock images like "hero-slide-1.png")

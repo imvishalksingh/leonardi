@@ -81,12 +81,21 @@ export const CartProvider = ({ children }) => {
                     .filter(item => item.product && item.product.id) // Filter out orphan items
                     .map(item => {
                         const productData = item.product;
+                        let images = productData.images || [];
+                        if (typeof images === 'string') {
+                            try {
+                                images = JSON.parse(images);
+                            } catch (e) {
+                                images = [];
+                            }
+                        }
+
                         return {
                             ...productData,
                             id: productData.id,
                             name: productData.name || productData.title || 'Unknown Product',
                             price: parseFloat(productData.sale_price || productData.price || 0),
-                            images: productData.images || [],
+                            images: Array.isArray(images) ? images : [],
                             quantity: item.quantity,
                             selectedSize: null,
                             selectedColor: null
